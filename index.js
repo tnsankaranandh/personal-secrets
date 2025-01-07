@@ -13,9 +13,10 @@ const dotenv = require('dotenv');
 const expressStatusMonitor = require('express-status-monitor');
 const connectDB = require('./config/mongoose');
 const routes = require('./routes');
+const fs = require('fs');
 
 // Make all variables from our .env file available in our process
-dotenv.config({ path: '.env.example' });
+dotenv.config({ path: '.env' });
 
 // Init express server
 const app = express();
@@ -41,6 +42,15 @@ app.use(routes);
 const port = process.env.PORT || 8080;
 const address = process.env.SERVER_ADDRESS || 'localhost';
 
-app.get('/', (req, res) => res.send('Hello World!'));
+app.get('/', (req, res) => {
+  fs.readFile('./index.html', 'utf8', (err, htmlContents) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    console.log('htmlContents: ', htmlContents);
+    res.send(htmlContents);
+  });
+});
 
 app.listen(port, () => console.log(`Server running on http://${address}:${port}`));

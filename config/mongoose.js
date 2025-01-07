@@ -9,6 +9,7 @@ const connectDB = async () => {
     mongoose.set('useNewUrlParser', true);
     mongoose.set('useUnifiedTopology', true);
     await mongoose.connect(process.env.MONGODB_URI);
+    console.log("Mongoose connected");
   } catch (e) {
     console.error(e.message);
     console.log(

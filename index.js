@@ -48,7 +48,6 @@ app.get('/', (req, res) => {
       console.error(err);
       return;
     }
-    console.log('htmlContents: ', htmlContents);
     res.send(htmlContents);
   });
 });

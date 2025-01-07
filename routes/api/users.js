@@ -8,6 +8,7 @@ const auth = require('../../config/auth');
  * @access  Public
  */
 router.post('/', async (req, res) => {
+  console.log("in user routes, trying to create");
   const user = new User(req.body);
   try {
     await user.save();

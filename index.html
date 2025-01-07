@@ -1,0 +1,86 @@
+<div style="width: 100%; height: 100%;">
+	<div id="login" style="display: block;">
+		<input id="emailid" type="text" />
+		<input id="password" type="password" />
+		<button onClick="login()">Login</button>
+	</div>
+	<div id="contents" style="display: none;">
+		<!-- <div style="width: 30%; height: 100%; border-right: 1px solid; display: inline-block">
+			Folders will come here
+		</div>
+		<div style="width: 69%; height: 100%; display: inline-block">
+			Items will be shown here
+		</div> -->
+		<select name="folders" id="folders">
+			<option value="volvo">Volvo</option>
+			<option value="saab">Saab</option>
+			<option value="mercedes">Mercedes</option>
+			<option value="audi">Audi</option>
+		</select>
+		<button onClick="addFolder()">+</button>
+		<select name="items" id="items">
+			<option value="volvo">Volvo</option>
+			<option value="saab">Saab</option>
+			<option value="mercedes">Mercedes</option>
+			<option value="audi">Audi</option>
+		</select>
+		<button onClick="addItem()">+</button>
+	</div>
+</div>
+<script>
+	const baseURL = "http://localhost:8080";
+	// const baseURL = "https://personal-secrets.onrender.com";
+	function createUser(){
+		fetch(baseURL + "/api/users", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				name: "sankar",
+			    email: "tnsankaranandh@gmail.com",
+			    password: "Sankar@91",
+			    role: "superadmin"
+			}),
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log("user created !!!", data);
+		})
+		.catch(error => {
+			console.error('Error while creating user:', error);
+		});
+	}
+	function login() {
+		document.getElementById('login').style.display = 'none';
+		document.getElementById('contents').style.display = 'block';
+		
+		fetch(baseURL + "/api/auth/login", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+			    email: document.getElementById('emailid').value,
+			    password: document.getElementById('password').value
+			}),
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response for Login was not ok');
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log("user logged in !!!", data);
+			document.getElementById('login').style.display = 'none';
+			document.getElementById('contents').style.display = 'block';
+		})
+		.catch(error => {
+			console.error('Error while creating user:', error);
+		});
+	};
+</script>

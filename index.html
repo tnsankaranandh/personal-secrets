@@ -1,36 +1,36 @@
+<body>
 <div style="width: 100%; height: 100%;">
 	<div id="login" style="display: block;">
-		<input id="emailid" type="text" />
-		<input id="password" type="password" />
+		<input id="emailid" type="text" value="tnsankaranandh@gmail.com" />
+		<input id="password" type="password" value="Sankar@91" />
 		<button onClick="login()">Login</button>
 	</div>
 	<div id="contents" style="display: none;">
-		<!-- <div style="width: 30%; height: 100%; border-right: 1px solid; display: inline-block">
-			Folders will come here
+		<div id="filtersArea">
+			<select name="folders" id="folders" onChange="folderChanged(this);">
+			</select>
+			<button onClick="addFolder()">+</button>
+			<button onClick="deleteFolder()">-</button>
+			<select name="items" id="items" onChange="itemChanged(this);">
+			</select>
+			<button onClick="addItem()">+</button>
+			<button onClick="deleteItem()">-</button>
 		</div>
-		<div style="width: 69%; height: 100%; display: inline-block">
-			Items will be shown here
-		</div> -->
-		<select name="folders" id="folders">
-			<option value="volvo">Volvo</option>
-			<option value="saab">Saab</option>
-			<option value="mercedes">Mercedes</option>
-			<option value="audi">Audi</option>
-		</select>
-		<button onClick="addFolder()">+</button>
-		<select name="items" id="items">
-			<option value="volvo">Volvo</option>
-			<option value="saab">Saab</option>
-			<option value="mercedes">Mercedes</option>
-			<option value="audi">Audi</option>
-		</select>
-		<button onClick="addItem()">+</button>
+		<div id="itemArea" style="display: none;">
+			Item details will be displayed here!!!!
+		</div>
 	</div>
 </div>
+<div id="newFolderDialog" style="display: none;position: absolute; width: 100%; height: 100%; z-index: 500; background: black; top: 0; left: 0">
+	<input type="text" id="newFolderName" />
+	<button onClick="createFolder()">Add Folder</button>
+	<button onClick="closeAddFolderPopup()">Close</button>
+</div>
+</body>
 <script>
 	const baseURL = "http://localhost:8080";
 	// const baseURL = "https://personal-secrets.onrender.com";
-	function createUser(){
+	/*function createUser(){
 		fetch(baseURL + "/api/users", {
 			method: 'POST',
 			headers: {
@@ -54,11 +54,155 @@
 		.catch(error => {
 			console.error('Error while creating user:', error);
 		});
-	}
+	}*/
+
+	function removeAllSelectOptions(selectElement) {
+	   var i;
+	   const L = selectElement.options.length - 1;
+	   for(i = L; i >= 0; i--) {
+	      selectElement.remove(i);
+	   }
+	};
+
+	function addSelectOptions(selectElement, optionsArray) {
+		(optionsArray || []).forEach((optionObject) => {
+			if (optionObject.text && optionObject.value) {
+				const o = document.createElement("option");
+				o.text = optionObject.text;
+				o.value = optionObject.value;
+				selectElement.add(o);
+			}
+		});
+	};
+
+	function addFolder() {
+		document.getElementById('newFolderDialog').style.display = "block";
+	};
+
+	function closeAddFolderPopup() {
+		document.getElementById('newFolderDialog').style.display = "none";
+	};
+
+	function createFolder() {
+		fetch(baseURL + "/api/folders", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				name: document.getElementById('newFolderName').value
+			}),
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response was not ok for creating folder');
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log("new folder created !!!", data);
+			closeAddFolderPopup();
+			updateFoldersList();
+		})
+		.catch(error => {
+			console.error('Error while creating folder:', error);
+			alert("Error");
+		});
+	};
+
+	function deleteFolder() {
+		fetch(baseURL + "/api/folders/" + document.getElementById('folders').value, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response for Folder delete was not ok');
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log("Folder Deleted !!!", data);
+			updateFoldersList();
+		})                       
+		.catch(error => {
+			console.error('Error while deleting folder:', error);
+		});
+	};
+
+	function folderChanged(foldersElement) {
+		document.getElementById('itemArea').style.display = "none";
+		if (foldersElement.value) {
+			updateItemsList(foldersElement.value);
+		}
+	};
+
+	function updateFoldersList() {
+		fetch(baseURL + "/api/folders/", {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response for Folder get was not ok');
+			}
+			return response.json();
+		})
+		.then(data => {	
+			const foldersElement = document.getElementById('folders');
+			removeAllSelectOptions(foldersElement);
+			const folderOptions = [];
+			data.forEach(f => {
+				folderOptions.push({
+					value: f._id,
+					text: f.name,
+				});
+			});
+			addSelectOptions(foldersElement, folderOptions);
+			folderChanged(foldersElement);
+		})
+		.catch(error => {
+			console.error('Error while deleting folder:', error);
+		});
+	};
+
+	function itemChanged(itemsElement) {
+		console.log(itemsElement.value);
+		console.log("items changed!!!!!!! check above log for item value");
+	};
+
+	function updateItemsList(folderUid) {
+		fetch(baseURL + "/api/items/" + folderUid, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response for Item get was not ok');
+			}
+			return response.json();
+		})
+		.then(data => {	
+			const itemsElement = document.getElementById('items');
+			removeAllSelectOptions(itemsElement);
+			const itemOptions = [];
+			data.forEach(i => {
+				itemOptions.push({
+					value: i._id,
+					text: i.title,
+				});
+			});
+			addSelectOptions(itemsElement, itemOptions);
+			itemChanged(itemsElement);
+		})
+		.catch(error => {
+			console.error('Error while getting item list:', error);
+		});
+	};
+
 	function login() {
-		document.getElementById('login').style.display = 'none';
-		document.getElementById('contents').style.display = 'block';
-		
 		fetch(baseURL + "/api/auth/login", {
 			method: 'POST',
 			headers: {
@@ -78,6 +222,7 @@
 			console.log("user logged in !!!", data);
 			document.getElementById('login').style.display = 'none';
 			document.getElementById('contents').style.display = 'block';
+			updateFoldersList();
 		})
 		.catch(error => {
 			console.error('Error while creating user:', error);

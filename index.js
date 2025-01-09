@@ -48,7 +48,7 @@ app.get('/', (req, res) => {
       console.error(err);
       return;
     }
-    res.send(htmlContents);
+    res.send(htmlContents.replace("$API_BASE_URL", process.env.API_BASE_URL));
   });
 });
 

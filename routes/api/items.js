@@ -1,27 +1,17 @@
 const router = require('express').Router();
 const Item = require('../../models/Item');
 
-/**
- * @route   POST /users
- * @desc    Register new user
- * @access  Public
- */
 router.post('/', async (req, res) => {
-  const folder = new Folder(req.body);
+  const item = new Item(req.body);
   try {
-    await folder.save();
-    res.status(201).send({ folder });
+    await item.save();
+    res.status(201).send({ item });
   } catch (e) {
     res.status(400).send(e);
   }
 });
 
-/**
- * @route   GET /users
- * @desc    Get all users
- * @access  Private
- */
-router.get('/:folderUid', async (req, res) => {
+router.get('/getbyfolder/:folderUid', async (req, res) => {
   try {
     const folderUid = req.params.folderUid;
     const items = await Item.find({ folderUid });
@@ -32,11 +22,17 @@ router.get('/:folderUid', async (req, res) => {
   }
 });
 
-/**
- * @route   DELETE /users/:id
- * @desc    Delete user by id
- * @access  Private
- */
+router.get('/:id', async (req, res) => {
+  try {
+    const _id = req.params.id;
+    const item = await Item.findById(_id);
+    res.send(item);
+  } catch (e) {
+    console.error('Error while getting items : ', e);
+    res.status(400).send(e);
+  }
+});
+
 router.delete('/:id', async (req, res) => {
   const _id = req.params.id;
   try {
@@ -44,6 +40,18 @@ router.delete('/:id', async (req, res) => {
     if (!item) return res.sendStatus(404);
 
     return res.send({ message: 'Item Deleted' });
+  } catch (e) {
+    return res.sendStatus(400);
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  const _id = req.params.id;
+  try {
+    const item = await Item.findByIdAndUpdate(_id, req.body);
+    if (!item) return res.sendStatus(404);
+
+    return res.send({ message: 'Item Updated' });
   } catch (e) {
     return res.sendStatus(400);
   }

@@ -17,7 +17,22 @@
 			<button onClick="deleteItem()">-</button>
 		</div>
 		<div id="itemArea" style="display: none;">
-			Item details will be displayed here!!!!
+			<div>
+				<input type="text" id="selectedItemTitle" placeholder="Title" style="width: 50%" />
+				<br />
+				<input type="text" id="selectedItemUsername" placeholder="User Name" style="width: 50%" />
+				<br />
+				<input type="text" id="selectedItemPassword" placeholder="Password" style="width: 50%" />
+				<button onClick="copyCurrentItemPassword()">Copy</button>
+				<br />
+				<textarea id="selectedItemNotes" style="width: 50%; height: 50%" placeholder="Notes"></textarea>
+				<br />
+			</div>
+			<div>
+				<button id="selectedItemEditButton" onClick="editSelectedItem()">Edit</button>
+				<button id="selectedItemSaveButton" onClick="saveSelectedItem()" style="display: none;">Save</button>
+				<button id="selectedItemCloseButton" onClick="disableSelectedItemEditMode()" style="display: none;">Close</button>
+			</div>
 		</div>
 	</div>
 </div>
@@ -26,35 +41,22 @@
 	<button onClick="createFolder()">Add Folder</button>
 	<button onClick="closeAddFolderPopup()">Close</button>
 </div>
+<div id="newItemDialog" style="display: none;position: absolute; width: 100%; height: 100%; z-index: 500; background: black; top: 0; left: 0">
+	<input type="text" id="newItemTitle" placeholder="Title" style="width: 50%" />
+	<br />
+	<input type="text" id="newItemUsername" placeholder="User Name" style="width: 50%" />
+	<br />
+	<input type="text" id="newItemPassword" placeholder="Password" style="width: 50%" />
+	<br />
+	<textarea id="newItemNotes" style="width: 50%; height: 50%" placeholder="Notes"></textarea>
+	<br />
+	<button onClick="createItem()">Add Item</button>
+	<button onClick="closeAddItemPopup()">Close</button>
+</div>
 </body>
 <script>
 	const baseURL = "http://localhost:8080";
 	// const baseURL = "https://personal-secrets.onrender.com";
-	/*function createUser(){
-		fetch(baseURL + "/api/users", {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				name: "sankar",
-			    email: "tnsankaranandh@gmail.com",
-			    password: "Sankar@91",
-			    role: "superadmin"
-			}),
-		}).then(response => {
-			if (!response.ok) {
-				throw new Error('Network response was not ok');
-			}
-			return response.json();
-		})
-		.then(data => {
-			console.log("user created !!!", data);
-		})
-		.catch(error => {
-			console.error('Error while creating user:', error);
-		});
-	}*/
 
 	function removeAllSelectOptions(selectElement) {
 	   var i;
@@ -81,6 +83,7 @@
 
 	function closeAddFolderPopup() {
 		document.getElementById('newFolderDialog').style.display = "none";
+		document.getElementById('newFolderName').value = "";
 	};
 
 	function createFolder() {
@@ -167,13 +170,105 @@
 		});
 	};
 
+	function addItem() {
+		document.getElementById('newItemDialog').style.display = "block";
+	};
+
+	function closeAddItemPopup() {
+		document.getElementById('newItemDialog').style.display = "none";
+		document.getElementById('newItemTitle').value = "";
+		document.getElementById('newItemUsername').value = "";
+		document.getElementById('newItemPassword').value = "";
+		document.getElementById('newItemNotes').value = "";
+	};
+
+	function createItem() {
+		fetch(baseURL + "/api/items", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				title: document.getElementById('newItemTitle').value,
+				username: document.getElementById('newItemUsername').value,
+				password: document.getElementById('newItemPassword').value,
+				notes: document.getElementById('newItemNotes').value,
+				folderUid: document.getElementById('folders').value
+			}),
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response was not ok for creating item');
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log("new item created !!!", data);
+			closeAddItemPopup();
+			updateItemsList(document.getElementById('folders').value);
+		})
+		.catch(error => {
+			console.error('Error while creating item:', error);
+			alert("Error");
+		});
+	};
+
+	function deleteItem() {
+		fetch(baseURL + "/api/items/" + document.getElementById('items').value, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response for Item delete was not ok');
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log("Item Deleted !!!", data);
+			updateItemsList(document.getElementById('folders').value);
+		})                       
+		.catch(error => {
+			console.error('Error while deleting item:', error);
+		});
+	};
+
 	function itemChanged(itemsElement) {
 		console.log(itemsElement.value);
-		console.log("items changed!!!!!!! check above log for item value");
+		document.getElementById('itemArea').style.display = "none";
+		fetch(baseURL + "/api/items/" + itemsElement.value, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			}
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response for Item get was not ok');
+			}
+			return response.json();
+		})
+		.then(data => {
+			document.getElementById('selectedItemTitle').value = data.title;
+			document.getElementById('selectedItemTitle').disabled = "disabled";
+			document.getElementById('selectedItemUsername').value = data.username;
+			document.getElementById('selectedItemUsername').disabled = "disabled";
+			document.getElementById('selectedItemPassword').value = data.password;
+			document.getElementById('selectedItemPassword').disabled = "disabled";
+			document.getElementById('selectedItemNotes').value = data.notes;
+			document.getElementById('selectedItemNotes').disabled = "disabled";
+			document.getElementById('itemArea').style.display = "block";
+
+			document.getElementById('selectedItemEditButton').style.display = "block";
+			document.getElementById('selectedItemSaveButton').style.display = "none";
+			document.getElementById('selectedItemCloseButton').style.display = "none";
+		})
+		.catch(error => {
+			console.error('Error while deleting folder:', error);
+		});
 	};
 
 	function updateItemsList(folderUid) {
-		fetch(baseURL + "/api/items/" + folderUid, {
+		fetch(baseURL + "/api/items/getbyfolder/" + folderUid, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -228,4 +323,57 @@
 			console.error('Error while creating user:', error);
 		});
 	};
+
+	function copyCurrentItemPassword() {
+		const valueToCopy = document.getElementById('selectedItemPassword').value;
+		//TODO: Value should be copied.
+	};
+
+	function editSelectedItem() {
+		document.getElementById('selectedItemTitle').removeAttribute("disabled");
+		document.getElementById('selectedItemUsername').removeAttribute("disabled");
+		document.getElementById('selectedItemPassword').removeAttribute("disabled");
+		document.getElementById('selectedItemNotes').removeAttribute("disabled");
+		document.getElementById('selectedItemEditButton').style.display = "none";
+		document.getElementById('selectedItemSaveButton').style.display = "inline-block";
+		document.getElementById('selectedItemCloseButton').style.display = "inline-block";
+	};
+
+	function saveSelectedItem() {
+		fetch(baseURL + "/api/items/" + document.getElementById('items').value, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				title: document.getElementById('selectedItemTitle').value,
+				username: document.getElementById('selectedItemUsername').value,
+				password: document.getElementById('selectedItemPassword').value,
+				notes: document.getElementById('selectedItemNotes').value
+			}),
+		}).then(response => {
+			if (!response.ok) {
+				throw new Error('Network response was not ok for updating item');
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log("item updated !!!", data);
+			itemChanged(document.getElementById('items'));
+		})
+		.catch(error => {
+			console.error('Error while updating item:', error);
+			alert("Error");
+		});
+	};
+
+	function disableSelectedItemEditMode() {
+		itemChanged(document.getElementById('items'));
+	};
 </script>
+
+0502900432
+0502900433
+
+
+

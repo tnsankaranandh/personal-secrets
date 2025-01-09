@@ -8,7 +8,7 @@ const itemSchema = Schema(
     username: String,
     password: String,
     notes: String,
-    folderUid: [{ type: Schema.Types.ObjectId, ref: 'Folder' }]
+    folderUid: { type: Schema.Types.ObjectId, ref: 'Folder' }
   },
   { timestamps: true }
 );

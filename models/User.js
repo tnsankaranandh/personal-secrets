@@ -65,7 +65,7 @@ userSchema.statics.findByCredentials = async function(email, password) {
   console.log('a');
   const User = this;
   console.log(email, password);
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }, { email: 1, password: 1, name: 1, _id: 1, role: 1});
   console.log("query result ");
   console.log(user);
   console.log(typeof user);
@@ -73,12 +73,6 @@ userSchema.statics.findByCredentials = async function(email, password) {
   if (!user) throw new Error('Unable to login');
   console.log('comparing ' , password, user.password);
   const isMatch = await bcrypt.compare(password, user.password);
-
-    const salt = await bcrypt.genSalt(10);
-    const abcd = await bcrypt.hash("Sankar@91", salt);
-    console.log(abcd);
-
-
   if (!isMatch) throw new Error('Unable to login');
   console.log("after isMatch validation ", user);
   return user;

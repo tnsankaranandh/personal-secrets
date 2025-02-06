@@ -9,7 +9,9 @@ const auth = require('../../config/auth');
  */
 router.post('/login', async (req, res) => {
   try {
+    console.log("1");
     const { email, password } = req.body;
+    console.log(email, password);
     const user = await User.findByCredentials(email, password);
     console.log("user ", user);
     const token = await user.generateAuthToken();

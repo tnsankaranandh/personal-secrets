@@ -62,6 +62,7 @@ userSchema.methods.generateAuthToken = async function() {
  * Helper static method for finding user by credentials
  */
 userSchema.statics.findByCredentials = async function(email, password) {
+  console.log('a');
   const User = this;
   console.log(email, password);
   const user = await User.findOne({ email });
@@ -77,9 +78,9 @@ userSchema.statics.findByCredentials = async function(email, password) {
     const abcd = await bcrypt.hash("Sankar@91", salt);
     console.log(abcd);
 
-    
-  if (!isMatch) throw new Error('Unable to login');
 
+  if (!isMatch) throw new Error('Unable to login');
+  console.log("after isMatch validation ", user);
   return user;
 };
 

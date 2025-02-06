@@ -11,9 +11,11 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findByCredentials(email, password);
+    console.log("user ", user);
     const token = await user.generateAuthToken();
-    res.send({ user, token });
+    res.send({ user, token });                                           
   } catch (e) {
+    console.log("error ",e );
     res.status(400).send({
       error: { message: 'You have entered an invalid email or password' },
     });

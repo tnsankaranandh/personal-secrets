@@ -43,6 +43,7 @@ const port = process.env.PORT || 8080;
 const address = process.env.SERVER_ADDRESS || 'localhost';
 
 app.get('/', (req, res) => {
+  console.log("server reached!!!!!!!!!!!!!!!");
   fs.readFile('./index.html', 'utf8', (err, htmlContents) => {
     if (err) {
       console.error(err);

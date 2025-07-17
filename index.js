@@ -58,7 +58,7 @@ app.listen(port, () => console.log(`Server running on http://${address}:${port}`
 
 const bcrypt = require('bcryptjs');
 const salt = bcrypt.genSalt(10).then(salt => {
-  bcrypt.hash("Sanka@91", salt).then(password => {
+  bcrypt.hash("Sankar@91", salt).then(password => {
     console.log("afafdsfsdfsfd : ", password);
   })
 });

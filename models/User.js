@@ -67,7 +67,7 @@ userSchema.statics.findByCredentials = async function(email, password) {
   console.log(email, password);
   console.log('readystate');
   console.log(mongoose.connection.readyState);
-  const user = await User.findOne({ email }, { email: 1, password: 1, name: 1, _id: 1, role: 1});
+  const user = await User.findOne({ email }, { email: 1, password: 1, name: 1, _id: 1, role: 1, tokens: 1});
   console.log("query result ");
   console.log(user);
   console.log(typeof user);

@@ -8,6 +8,8 @@ const connectDB: Function = async () => {
     mongoose.set('useCreateIndex', true);
     mongoose.set('useNewUrlParser', true);
     mongoose.set('useUnifiedTopology', true);
+    console.log("process.env");
+    console.log(process.env);
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("Mongoose connected");
   } catch (e) {

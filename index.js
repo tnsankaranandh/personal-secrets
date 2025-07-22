@@ -43,15 +43,16 @@ const port = process.env.PORT || 8080;
 const address = process.env.SERVER_ADDRESS || 'localhost';
 
 app.get('/', (req, res) => {
-  console.log("server reached!!!!!!!!!!!!!!!");
-  fs.readFile('./index.html', 'utf8', (err, htmlContents) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log("process.env", process.env);
-    res.send(htmlContents.replace("$API_BASE_URL", process.env.API_BASE_URL));
-  });
+  res.send("<div>This is hardcoded html respone from server</div>");
+  // console.log("server reached!!!!!!!!!!!!!!!");
+  // fs.readFile('./index.html', 'utf8', (err, htmlContents) => {
+  //   if (err) {
+  //     console.error(err);
+  //     return;
+  //   }
+  //   console.log("process.env", process.env);
+  //   res.send(htmlContents.replace("$API_BASE_URL", process.env.API_BASE_URL));
+  // });
 });
 
 app.listen(port, () => console.log(`Server running on http://${address}:${port}`));

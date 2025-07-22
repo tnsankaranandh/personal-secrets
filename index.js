@@ -45,6 +45,13 @@ const address = process.env.SERVER_ADDRESS || 'localhost';
 app.get('/', (req, res) => {
   // res.send("<div>This is hardcoded html respone from server</div>");
   console.log("server reached!!!!!!!!!!!!!!!");
+  console.log("below are the file names where index.js server file is present");
+  fs.readdir('.', (err, files) => {
+    files.forEach(file => {
+      // will also include directory names
+      console.log(file);
+    });
+  });
   fs.readFile('./index.html', 'utf8', (err, htmlContents) => {
     if (err) {
       console.error(err);

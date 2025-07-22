@@ -297,6 +297,7 @@
 	};
 
 	function login() {
+		console.log('baseURL: ', baseURL);
 		fetch(baseURL + "/api/auth/login", {
 			method: 'POST',
 			headers: {

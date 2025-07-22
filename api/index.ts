@@ -40,6 +40,8 @@ app.get('/about', function (req, res) {
 app.get('/allUsers', async (req, res) => {
 	try {
 		await connectDB();
+        console.log("database connected successfully");
+        res.status(200).send('<h1>User added successfully</h1>');
 	} catch (error) {
 		console.error(error);
 		res.status(500).send('Error connecting DB');

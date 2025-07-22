@@ -32,8 +32,7 @@ const connectDB: Function = async () => {
       '%s MongoDB connection error. Please make sure MongoDB is running.',
       chalk.red('✗')
     );
-    // Exit process with failure
-    process.exit(1);
+    throw (e);
   }
 };
 

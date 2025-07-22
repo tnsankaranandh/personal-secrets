@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon start",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier-eslint \"**/*.{js,json}\" --write",
     "lint": "eslint \"**/*.js\""
   },

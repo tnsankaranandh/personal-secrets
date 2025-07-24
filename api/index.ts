@@ -16,7 +16,7 @@ const UserModel = require('./user');
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 app.use(express.static('public'));
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
 	try {
 		await connectDB();
         console.log("database connected successfully in use function");

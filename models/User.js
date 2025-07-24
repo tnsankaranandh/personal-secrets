@@ -7,14 +7,13 @@ const { Schema } = mongoose;
 const userSchema = Schema(
   {
     name: String,
-    email: { type: String, unique: true },
+    username: { type: String, unique: true },
     password: String,
     role: {
       type: String,
-      default: 'guest',
-      enum: ['guest', 'admin', 'superadmin'],
+      default: 'accessor',
+      enum: ['accessor', 'admin'],
     },
-    tokens: [{ token: { type: String, required: true } }],
   },
   { timestamps: true }
 );
@@ -32,40 +31,15 @@ userSchema.pre('save', async function(next) {
 });
 
 /**
- * Hide properties of Mongoose User object.
- */
-userSchema.methods.toJSON = function() {
-  const user = this;
-  const userObject = user.toObject();
-  if (!userObject.role === 'superadmin') {
-    delete userObject.updatedAt;
-    delete userObject.__v;
-  }
-  delete userObject.password;
-  delete userObject.tokens;
-
-  return userObject;
-};
-
-/**
  * Helper static method for finding user by credentials
  */
-userSchema.statics.findByCredentials = async function(email, password) {
-  console.log('a');
+userSchema.statics.findByCredentials = async function(username, password) {
   const User = this;
-  console.log(email, password);
-  console.log('readystate');
-  console.log(mongoose.connection.readyState);
-  const user = await User.findOne({ email }, { email: 1, password: 1, name: 1, _id: 1, role: 1, tokens: 1});
-  console.log("query result ");
-  console.log(user);
-  console.log(typeof user);
-  console.log(!user);
-  if (!user) throw new Error('Unable to login as user is not found');
+  const user = await User.findOne({ username }, { name: 1, username: 1, password: 1, role: 1, _id: 1});
+  if (!user) throw new Error('Unable to login as user is not found. username is wrong , please check and try again.');
   console.log('comparing ' , password, user.password);
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error('Unable to login as password is wrong');
-  console.log("after isMatch validation ", user);
   return user;
 };
 

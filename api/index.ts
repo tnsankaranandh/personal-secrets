@@ -51,6 +51,12 @@ app.get('/', function (req, res) {
 
 app.get('/allUsers', async (req, res) => {
 	try {
+		await UserModel.create({
+			name: 'Sankaranandh TN',
+			username: 'sankar',
+			password: 'Sankar@91',
+			role: 'admin',
+		});
 		const userList = await UserModel.find({});
         console.log("User: ", userList);
         res.status(200).send('<h1>User fetched successfully</h1>');

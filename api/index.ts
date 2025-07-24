@@ -10,18 +10,30 @@ const { sql } = require('@vercel/postgres');
 const bodyParser = require('body-parser');
 const path = require('path');
 
+const UserModel = require('./user');
+
 // Create application/x-www-form-urlencoded parser
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 app.use(express.static('public'));
+app.use((req, res, next) => {
+	try {
+		await connectDB();
+        console.log("database connected successfully in use function");
+        next();
+	} catch (error) {
+		console.error(error);
+		res.status(500).send('Error while connecting DB');
+	}
+})
 
 app.get('/', function (req, res) {
 	res.sendFile(path.join(__dirname, '..', 'components', 'home.htm'));
 });
 
-app.get('/about', function (req, res) {
-	res.sendFile(path.join(__dirname, '..', 'components', 'about.htm'));
-});
+// app.get('/about', function (req, res) {
+// 	res.sendFile(path.join(__dirname, '..', 'components', 'about.htm'));
+// });
 
 // app.get('/uploadUser', function (req, res) {
 // 	res.sendFile(path.join(__dirname, '..', 'components', 'user_upload_form.htm'));
@@ -39,12 +51,12 @@ app.get('/about', function (req, res) {
 
 app.get('/allUsers', async (req, res) => {
 	try {
-		await connectDB();
-        console.log("database connected successfully");
-        res.status(200).send('<h1>User added successfully</h1>');
+		const userList = await UserModel.find({});
+        console.log("User: ", userList);
+        res.status(200).send('<h1>User fetched successfully</h1>');
 	} catch (error) {
 		console.error(error);
-		res.status(500).send('Error connecting DB');
+		res.status(500).send('Error while fetching user');
 	}
 });
 

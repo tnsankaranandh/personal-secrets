@@ -52,10 +52,35 @@
 			<p>This user dashboard was built with Express.js on Vercel.</p>
 			<nav>
 				<a href="/about">About Us</a>
-				<a href="/allUsers">View Users</a>
+				<a onclick="fetchUsers()">View Users</a>
 				<a href="/uploadUser">Upload New User</a>
 				<a href="/images/logo.png">View Logo</a>
 			</nav>
 		</div>
 	</body>
+	<script>
+		const fetchUsers = () => {
+			fetch(baseURL + "/allUsers", {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				// body: JSON.stringify({
+				//     email: 'sankar',
+				//     password: 'Sankar@91'
+				// }),
+			}).then(response => {
+				if (!response.ok) {
+					throw new Error('Network response for Login was not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				console.log("user logged in !!!", data);
+			})
+			.catch(error => {
+				console.error('Error while listing user:', error);
+			});
+		}
+	</script>
 </html>

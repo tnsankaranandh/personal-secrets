@@ -1,15 +1,8 @@
-const mongoose = require('mongoose');
-const chalk = require('chalk');
+import * as mongoose from "mongoose";
+import * as chalk from "chalk";
 
 const connectDB: Function = async () => {
   try {
-    // MongoDB setup.
-    // mongoose.set('useFindAndModify', false);
-    // mongoose.set('useCreateIndex', true);
-    // mongoose.set('useNewUrlParser', true);
-    // mongoose.set('useUnifiedTopology', true);
-    console.log("process.env");
-    console.log(process.env);
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("Mongoose connected");
   } catch (e) {
@@ -22,4 +15,4 @@ const connectDB: Function = async () => {
   }
 };
 
-module.exports = connectDB;
+export default connectDB;

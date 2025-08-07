@@ -1,65 +1,100 @@
-require('dotenv').config();
+'use strict';
 
+import * as dotenv from "dotenv";
+dotenv.config();
 
-const connectDB = require('./database');
+import connectDB from "./database";
+import * as express from "express";
+import * as cors from "cors";
+import * as bodyParser from "body-parser";
+import * as path from "path";
+import * as jwt from 'jsonwebtoken';
+import * as UserAPI from "./user";
+import * as FolderAPI from "./folder";
+import * as ItemAPI from "./item";
 
-const express = require('express');
 const app = express();
-const { sql } = require('@vercel/postgres');
 
-const bodyParser = require('body-parser');
-const path = require('path');
-
-const UserModel = require('../models/User');
+const getUIPageWithPath = (componentName: string) => path.join(__dirname, '..', 'components', componentName, 'index.htm');
 
 // Create application/x-www-form-urlencoded parser
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
+bodyParser.urlencoded({ extended: false });
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static('public'));
-app.use(async (req, res, next) => {
+app.use(express.static('components'));
+
+app.get('/', (req: any, res: any) => res.redirect('/login'));
+app.get('/login', (req: any, res: any) => res.sendFile(getUIPageWithPath('login')));
+app.get('/listSecrets', (req: any, res: any) => res.sendFile(getUIPageWithPath('listSecrets')));
+app.get('/createFolderModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createFolderModal')));
+app.get('/createItemModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createItemModal')));
+app.get('/createUserModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createUserModal')));
+
+
+// Define CORS options
+const corsOptions = {
+    origin: 'http://localhost:8000', // Specify allowed origin(s)
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
+    allowedHeaders: ['X-Session-Data', 'x-session-data'], // Define allowed request headers
+    exposedHeaders: ['X-Session-Data', 'x-session-data'], // Define headers exposed to the client
+    credentials: true, // Allow sending cookies/credentials
+    optionsSuccessStatus: 200 // Some legacy browsers require 200 for OPTIONS
+};
+app.use(cors(corsOptions));
+
+
+const routesToIgnoreSessionValidation = [
+	'/login',
+	'/.well-known/appspecific/com.chrome.devtools.json'
+];
+app.use(async (req: any, res: any, next: any) => {
+	try {
+		console.log('Route received in server is:');
+		console.log(req.originalUrl);
+		if (routesToIgnoreSessionValidation.indexOf(req.originalUrl) === -1) {
+			const decodedSession: any = await jwt.verify(req.headers['x-session-data'], process.env.JWT_SECRET);
+			console.log('session created at : ', new Date(decodedSession.iat));
+			console.log('session expires at : ', new Date(decodedSession.exp));
+			console.log('decodedSession : ', decodedSession);
+		}
+		next();
+	} catch (e) {
+		console.error(e);
+		res.status(500).send({
+			errorMessage:'Invalid Session!',
+			isSessionInvalid: true,
+		});
+	}
+});
+app.use(async (req: any, res: any, next: any) => {
 	try {
 		await connectDB();
-        console.log("database connected successfully in use function");
         next();
 	} catch (error) {
 		console.error(error);
-		res.status(500).send('Error while connecting DB');
-	}
-})
-
-app.get('/', function (req, res) {
-	res.sendFile(path.join(__dirname, '..', 'components', 'home.htm'));
-});
-
-// app.get('/about', function (req, res) {
-// 	res.sendFile(path.join(__dirname, '..', 'components', 'about.htm'));
-// });
-
-// app.get('/uploadUser', function (req, res) {
-// 	res.sendFile(path.join(__dirname, '..', 'components', 'user_upload_form.htm'));
-// });
-
-// app.post('/uploadSuccessful', urlencodedParser, async (req, res) => {
-// 	try {
-// 		await sql`INSERT INTO Users (Id, Name, Email) VALUES (${req.body.user_id}, ${req.body.name}, ${req.body.email});`;
-// 		res.status(200).send('<h1>User added successfully</h1>');
-// 	} catch (error) {
-// 		console.error(error);
-// 		res.status(500).send('Error adding user');
-// 	}
-// });
-
-app.get('/allUsers', async (req, res) => {
-	try {
-		const userList = await UserModel.find({});
-        console.log("User: ", userList);
-        res.status(200).json(userList);
-	} catch (error) {
-		console.error(error);
-		res.status(500).send('Error while fetching user');
+		res.status(500).send({ errorMessage: 'Error while connecting DB' });
 	}
 });
+app.post('/login', UserAPI.login);
+app.get('/folders/list', FolderAPI.list);
+app.post('/folder/create', FolderAPI.create);
+app.get('/items/list/:folderUid', ItemAPI.list);
+app.post('/item/create', ItemAPI.create);
+app.get('/item/:itemUid', ItemAPI.detail);
+app.post('/user/create', UserAPI.create);
 
-app.listen(8000, () => console.log('Server ready on port 8000.'));
+
+app.all('*', (req: any, res: any) => res.redirect('/login'));
+
+app.use(function(error: any, request: any, response: any, next: any) {
+    // Handle the error
+    console.log("internal error has occurred!!!!");
+    console.log(error);
+    response.status(500).send('Internal Server Error');
+});
+
+
+app.listen(8000, () => { console.log('Server ready on port 8000.')} );
 
 module.exports = app;

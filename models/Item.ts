@@ -2,17 +2,17 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const itemSchema = Schema(
+const itemSchema: any = Schema(
   {
-    title: String,
+    folderUid: { type: Schema.Types.ObjectId, ref: 'Folder' },
+    title: { type: String, unique: true },
     username: String,
     password: String,
-    notes: String,
-    folderUid: { type: Schema.Types.ObjectId, ref: 'Folder' }
+    otherFields: Object,
   },
   { timestamps: true }
 );
 
 const Item = mongoose.model('Item', itemSchema);
 
-module.exports = Item;
+export default Item;

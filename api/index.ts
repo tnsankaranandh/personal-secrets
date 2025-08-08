@@ -48,7 +48,7 @@ const routesToIgnoreSessionValidation = [
 	'/login',
 	'/.well-known/appspecific/com.chrome.devtools.json'
 ];
-app.use(async (req: any, res: any, next: any) => {
+const validateSession = async (req: any, res: any, next: any) => {
 	try {
 		console.log('Route received in server is:');
 		console.log(req.originalUrl);
@@ -66,8 +66,9 @@ app.use(async (req: any, res: any, next: any) => {
 			isSessionInvalid: true,
 		});
 	}
-});
-app.use(async (req: any, res: any, next: any) => {
+};
+
+const connectDB = async (req: any, res: any, next: any) => {
 	try {
 		await connectDB();
         next();
@@ -75,14 +76,15 @@ app.use(async (req: any, res: any, next: any) => {
 		console.error(error);
 		res.status(500).send({ errorMessage: 'Error while connecting DB' });
 	}
-});
-app.post('/login', UserAPI.login);
-app.get('/folders/list', FolderAPI.list);
-app.post('/folder/create', FolderAPI.create);
-app.get('/items/list/:folderUid', ItemAPI.list);
-app.post('/item/create', ItemAPI.create);
-app.get('/item/:itemUid', ItemAPI.detail);
-app.post('/user/create', UserAPI.create);
+};
+
+app.post('/login', validateSession, connectDB, UserAPI.login);
+app.get('/folders/list', validateSession, connectDB, FolderAPI.list);
+app.post('/folder/create', validateSession, connectDB, FolderAPI.create);
+app.get('/items/list/:folderUid', validateSession, connectDB, ItemAPI.list);
+app.post('/item/create', validateSession, connectDB, ItemAPI.create);
+app.get('/item/:itemUid', validateSession, connectDB, ItemAPI.detail);
+app.post('/user/create', validateSession, connectDB, UserAPI.create);
 
 
 app.all('*', (req: any, res: any) => res.redirect('/login'));

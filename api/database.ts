@@ -1,5 +1,5 @@
-import * as mongoose from "mongoose";
-import * as chalk from "chalk";
+const mongoose = require("mongoose");
+const chalk = require("chalk");
 
 const connectDB: Function = async () => {
   try {
@@ -15,4 +15,6 @@ const connectDB: Function = async () => {
   }
 };
 
-export default connectDB;
+module.exports = {
+  connectDB,
+};

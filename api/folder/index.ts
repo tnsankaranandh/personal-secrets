@@ -1,5 +1,5 @@
-import FolderModel from "../../models/Folder";
-import * as chalk from "chalk";
+const FolderModel = require("../../models/Folder");
+const chalk = require("chalk");
 
 const list: any = async (req: any, res: any) => {
   console.log("in folders api list function");
@@ -36,7 +36,7 @@ const create: any = async (req: any, res: any) => {
   }
 };
 
-export {
+module.exports = {
   list,
   create
 };

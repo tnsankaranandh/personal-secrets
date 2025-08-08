@@ -1,5 +1,5 @@
-import ItemModel from "../../models/Item";
-import * as chalk from "chalk";
+const ItemModel = require("../../models/Item");
+const chalk = require("chalk");
 
 const list: any = async (req: any, res: any) => {
   try {
@@ -48,7 +48,7 @@ const detail: any = async (req: any, res: any) => {
   }
 };
 
-export {
+module.exports = {
   list,
   create,
   detail

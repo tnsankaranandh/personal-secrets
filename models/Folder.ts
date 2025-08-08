@@ -11,4 +11,6 @@ const folderSchema: any = Schema(
 
 const Folder = mongoose.model('Folder', folderSchema);
 
-export default Folder
+module.exports = {
+  Folder,
+};

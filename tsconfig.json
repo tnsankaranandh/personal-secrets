@@ -5,6 +5,7 @@
 		"lib": [
 			"ES6"
 		],
+		"moduleDetection": "force",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"noImplicitAny": true,

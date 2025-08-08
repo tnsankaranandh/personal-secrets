@@ -1,5 +1,5 @@
-import UserModel from "../../models/User";
-import * as chalk from "chalk";
+const UserModel = require("../../models/User");
+const chalk = require("chalk");
 
 const login: any = async (req: any, res: any) => {
   try {
@@ -35,7 +35,7 @@ const create: any = async (req: any, res: any) => {
   }
 };
 
-export {
+module.exports = {
   login,
   create,
 };

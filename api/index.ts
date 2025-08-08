@@ -1,17 +1,17 @@
 'use strict';
 
-import * as dotenv from "dotenv";
+const dotenv = require("dotenv");
 dotenv.config();
 
-import connectDB from "./database";
-import * as express from "express";
-import * as cors from "cors";
-import * as bodyParser from "body-parser";
-import * as path from "path";
-import * as jwt from 'jsonwebtoken';
-import * as UserAPI from "./user";
-import * as FolderAPI from "./folder";
-import * as ItemAPI from "./item";
+const connectDB = require("./database");
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const path = require("path");
+const jwt = require('jsonwebtoken');
+const UserAPI = require("./user");
+const FolderAPI = require("./folder");
+const ItemAPI = require("./item");
 
 const app = express();
 

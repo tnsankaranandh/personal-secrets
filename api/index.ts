@@ -68,7 +68,7 @@ const validateSession = async (req: any, res: any, next: any) => {
 	}
 };
 
-const connectDB = async (req: any, res: any, next: any) => {
+const connectDBFilter = async (req: any, res: any, next: any) => {
 	try {
 		await connectDB();
         next();
@@ -78,13 +78,13 @@ const connectDB = async (req: any, res: any, next: any) => {
 	}
 };
 
-app.post('/login', validateSession, connectDB, UserAPI.login);
-app.get('/folders/list', validateSession, connectDB, FolderAPI.list);
-app.post('/folder/create', validateSession, connectDB, FolderAPI.create);
-app.get('/items/list/:folderUid', validateSession, connectDB, ItemAPI.list);
-app.post('/item/create', validateSession, connectDB, ItemAPI.create);
-app.get('/item/:itemUid', validateSession, connectDB, ItemAPI.detail);
-app.post('/user/create', validateSession, connectDB, UserAPI.create);
+app.post('/login', validateSession, connectDBFilter, UserAPI.login);
+app.get('/folders/list', validateSession, connectDBFilter, FolderAPI.list);
+app.post('/folder/create', validateSession, connectDBFilter, FolderAPI.create);
+app.get('/items/list/:folderUid', validateSession, connectDBFilter, ItemAPI.list);
+app.post('/item/create', validateSession, connectDBFilter, ItemAPI.create);
+app.get('/item/:itemUid', validateSession, connectDBFilter, ItemAPI.detail);
+app.post('/user/create', validateSession, connectDBFilter, UserAPI.create);
 
 
 app.all('*', (req: any, res: any) => res.redirect('/login'));

@@ -16,5 +16,5 @@ const itemSchema: any = Schema(
 const Item = mongoose.model('Item', itemSchema);
 
 module.exports = {
-  Item,
+  ItemModel: Item,
 };

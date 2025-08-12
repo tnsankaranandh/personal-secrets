@@ -1,4 +1,4 @@
-const FolderModel = require("../../models/Folder");
+const { FolderModel } = require("../../models/Folder");
 const chalk = require("chalk");
 
 const list: any = async (req: any, res: any) => {

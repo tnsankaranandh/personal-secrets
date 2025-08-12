@@ -3,7 +3,7 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-const connectDB = require("./database");
+const { connectDB } = require("./database");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -70,6 +70,7 @@ const validateSession = async (req: any, res: any, next: any) => {
 
 const connectDBFilter = async (req: any, res: any, next: any) => {
 	try {
+		console.log(connectDB);
 		await connectDB();
         next();
 	} catch (error) {

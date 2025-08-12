@@ -1,4 +1,4 @@
-const ItemModel = require("../../models/Item");
+const { ItemModel } = require("../../models/Item");
 const chalk = require("chalk");
 
 const list: any = async (req: any, res: any) => {

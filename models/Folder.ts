@@ -12,5 +12,5 @@ const folderSchema: any = Schema(
 const Folder = mongoose.model('Folder', folderSchema);
 
 module.exports = {
-  Folder,
+  FolderModel: Folder,
 };

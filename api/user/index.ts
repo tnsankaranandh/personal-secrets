@@ -1,4 +1,4 @@
-const UserModel = require("../../models/User");
+const { UserModel } = require("../../models/User");
 const chalk = require("chalk");
 
 const login: any = async (req: any, res: any) => {

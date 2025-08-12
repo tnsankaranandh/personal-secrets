@@ -89,7 +89,7 @@ app.get('/allUsers', async (req, res) => {
 	}
 });
 
-app.all('*', (req: any, res: any) => res.redirect('/login'));
+// app.all('*', (req: any, res: any) => res.redirect('/login'));
 
 app.listen(3000, () => console.log('Server ready on port 3000.'));
 

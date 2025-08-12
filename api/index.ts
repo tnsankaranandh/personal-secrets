@@ -14,7 +14,7 @@ const getUIPageWithPath = (componentName: string) => path.join(__dirname, '..', 
 
 app.use(express.static('public'));
 
-app.get('/login', (req, res) => res.sendFile(getUIPageWithPath('login')));
+// app.get('/login', (req, res) => res.sendFile(getUIPageWithPath('login')));
 
 app.get('/allUsers', async (req, res) => {
 	try {

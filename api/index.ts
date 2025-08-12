@@ -88,7 +88,7 @@ app.post('/login', validateSession, connectDBFilter, UserAPI.login);
 // app.post('/user/create', validateSession, connectDBFilter, UserAPI.create);
 
 
-app.all('*', (req: any, res: any) => res.redirect('/login/index.html'));
+// app.all('*', (req: any, res: any) => res.redirect('/login/index.html'));
 
 app.use(function(error: any, request: any, response: any, next: any) {
     // Handle the error

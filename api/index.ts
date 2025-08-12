@@ -31,10 +31,21 @@ app.use(express.static('public'));
 // app.get('/createItemModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createItemModal')));
 // app.get('/createUserModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createUserModal')));
 
-
+const allowedOrigins = [
+    'http://localhost:8000',
+    'https://personal-secrets.vercel.app/',
+];
 // Define CORS options
 const corsOptions = {
-    origin: 'http://localhost:8000', // Specify allowed origin(s)
+    origin: function (origin: string | null, callback: Function) {
+        // Check if the requesting origin is in the allowedOrigins array
+        // or if the origin is undefined (e.g., for direct server requests or Postman)
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true); // Allow the request
+        } else {
+            callback(new Error('Not allowed by CORS')); // Deny the request
+        }
+    }, // Specify allowed origin(s)
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
     allowedHeaders: ['X-Session-Data', 'x-session-data'], // Define allowed request headers
     exposedHeaders: ['X-Session-Data', 'x-session-data'], // Define headers exposed to the client

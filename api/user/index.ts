@@ -9,6 +9,7 @@ const login: any = async (req: any, res: any) => {
     user = user.toObject();
     user.sessionToken = token;
     delete user.password;
+    console.log("user object in response ", user);
     res.send({ user });
   } catch (e) {
     console.error(e.message);

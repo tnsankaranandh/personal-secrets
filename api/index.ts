@@ -38,6 +38,7 @@ const allowedOrigins = [
 // Define CORS options
 const corsOptions = {
     origin: function (origin: string | null, callback: Function) {
+    	console.log('origin ', origin);
         // Check if the requesting origin is in the allowedOrigins array
         // or if the origin is undefined (e.g., for direct server requests or Postman)
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -45,7 +46,7 @@ const corsOptions = {
         } else {
             callback(new Error('Not allowed by CORS')); // Deny the request
         }
-    }, // Specify allowed origin(s)
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
     allowedHeaders: ['X-Session-Data', 'x-session-data'], // Define allowed request headers
     exposedHeaders: ['X-Session-Data', 'x-session-data'], // Define headers exposed to the client
@@ -90,7 +91,7 @@ const connectDBFilter = async (req: any, res: any, next: any) => {
 	}
 };
 
-app.post('/login', validateSession, connectDBFilter, UserAPI.login);
+app.post('/authenticateUser', validateSession, connectDBFilter, UserAPI.authenticate);
 // app.get('/folders/list', validateSession, connectDBFilter, FolderAPI.list);
 // app.post('/folder/create', validateSession, connectDBFilter, FolderAPI.create);
 // app.get('/items/list/:folderUid', validateSession, connectDBFilter, ItemAPI.list);

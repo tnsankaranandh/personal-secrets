@@ -1,7 +1,7 @@
 const { UserModel } = require("../../models/User");
 const chalk = require("chalk");
 
-const login: any = async (req: any, res: any) => {
+const authenticate: any = async (req: any, res: any) => {
   try {
     const { username, password } = req.body || {};
     let user = await UserModel.findByCredentials(username, password);
@@ -37,6 +37,6 @@ const create: any = async (req: any, res: any) => {
 };
 
 module.exports = {
-  login,
+  authenticate,
   create,
 };

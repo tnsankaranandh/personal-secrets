@@ -1,5 +1,5 @@
 const login = () => {
-	fetch("/login", {
+	fetch("/authenticateUser", {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

@@ -33,7 +33,7 @@ app.use(express.static('public'));
 
 const allowedOrigins = [
     'http://localhost:8000',
-    'https://personal-secrets.vercel.app/',
+    'https://personal-secrets.vercel.app',
 ];
 // Define CORS options
 const corsOptions = {

@@ -10,8 +10,8 @@ const bodyParser = require("body-parser");
 // const path = require("path");
 const jwt = require('jsonwebtoken');
 const UserAPI = require("./user");
-// const FolderAPI = require("./folder");
-// const ItemAPI = require("./item");
+const FolderAPI = require("./folder");
+const ItemAPI = require("./item");
 
 const app = express();
 
@@ -92,12 +92,12 @@ const connectDBFilter = async (req: any, res: any, next: any) => {
 };
 
 app.post('/authenticateUser', validateSessionFilter, connectDBFilter, UserAPI.authenticate);
-// app.get('/folders/list', validateSession, connectDBFilter, FolderAPI.list);
-// app.post('/folder/create', validateSession, connectDBFilter, FolderAPI.create);
-// app.get('/items/list/:folderUid', validateSession, connectDBFilter, ItemAPI.list);
-// app.post('/item/create', validateSession, connectDBFilter, ItemAPI.create);
-// app.get('/item/:itemUid', validateSession, connectDBFilter, ItemAPI.detail);
-// app.post('/user/create', validateSession, connectDBFilter, UserAPI.create);
+app.get('/folders/list', validateSessionFilter, connectDBFilter, FolderAPI.list);
+// app.post('/folder/create', validateSessionFilter, connectDBFilter, FolderAPI.create);
+app.get('/items/list/:folderUid', validateSessionFilter, connectDBFilter, ItemAPI.list);
+// app.post('/item/create', validateSessionFilter, connectDBFilter, ItemAPI.create);
+// app.get('/item/:itemUid', validateSessionFilter, connectDBFilter, ItemAPI.detail);
+// app.post('/user/create', validateSessionFilter, connectDBFilter, UserAPI.create);
 
 
 // app.all('*', (req: any, res: any) => res.redirect('/login/index.html'));

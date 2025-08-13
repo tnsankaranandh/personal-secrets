@@ -7,7 +7,6 @@ const { connectDB } = require("./database");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-// const path = require("path");
 const jwt = require('jsonwebtoken');
 const UserAPI = require("./user");
 const FolderAPI = require("./folder");
@@ -15,21 +14,12 @@ const ItemAPI = require("./item");
 
 const app = express();
 
-// const getUIPageWithPath = (componentName: string) => path.join(__dirname, '..', 'components', componentName, 'index.htm');
-
 // Create application/x-www-form-urlencoded parser
 bodyParser.urlencoded({ extended: false });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
-
-// app.get('/', (req: any, res: any) => res.redirect('/login'));
-// app.get('/login', (req: any, res: any) => res.sendFile(getUIPageWithPath('login')));
-// app.get('/listSecrets', (req: any, res: any) => res.sendFile(getUIPageWithPath('listSecrets')));
-// app.get('/createFolderModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createFolderModal')));
-// app.get('/createItemModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createItemModal')));
-// app.get('/createUserModal', (req: any, res: any) => res.sendFile(getUIPageWithPath('createUserModal')));
 
 const allowedOrigins = [
     'http://localhost:8000',
@@ -100,7 +90,7 @@ app.get('/item/:itemUid', validateSessionFilter, connectDBFilter, ItemAPI.detail
 app.post('/user/create', validateSessionFilter, connectDBFilter, UserAPI.create);
 
 
-// app.all('*', (req: any, res: any) => res.redirect('/login/index.html'));
+app.all('*', (req: any, res: any) => res.redirect('/login'));
 
 app.use(function(error: any, request: any, response: any, next: any) {
     // Handle the error

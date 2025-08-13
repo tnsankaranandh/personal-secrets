@@ -20,6 +20,5 @@ const login = () => {
 	})
 	.catch(error => {
 		console.error('Error while logging in:', error);
-		alert("Error while logging in: ", error);
 	});
 };

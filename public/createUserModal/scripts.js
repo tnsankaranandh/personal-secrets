@@ -26,6 +26,5 @@ const createUser = () => {
 	})
 	.catch(error => {
 		console.error('Error while creating user:', error);
-		alert("Error while creating user: ", error);
 	});
 };

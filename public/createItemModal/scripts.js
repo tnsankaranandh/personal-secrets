@@ -33,7 +33,6 @@ const createItem = () => {
 	})
 	.catch(error => {
 		console.error('Error while creating item:', error);
-		alert("Error while creating item: ", error);
 	});
 };
 

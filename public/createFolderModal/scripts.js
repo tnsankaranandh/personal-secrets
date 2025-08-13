@@ -23,6 +23,5 @@ const createFolder = () => {
 	})
 	.catch(error => {
 		console.error('Error while creating folder:', error);
-		alert("Error while creating folder: ", error);
 	});
 };

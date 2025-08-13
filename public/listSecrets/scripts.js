@@ -60,7 +60,6 @@ const updateFolderList = (folderUidToSelect, itemUidToSelect) => {
 	.catch(error => {
 		console.error('Error while listing folders:', error);
 		hideLoader();
-		alert("Error while listing folders: ", error);
 	});
 };
 updateFolderList();
@@ -81,7 +80,6 @@ fetch("/createFolderModal").then(response => {
 })
 .catch(error => {
 	console.error('Error while loading create folder modal:', error);
-	alert("Error while loading create folder modal: ", error);
 	hideLoader();
 });
 
@@ -101,7 +99,6 @@ fetch("/createItemModal").then(response => {
 })
 .catch(error => {
 	console.error('Error while loading create item modal:', error);
-	alert("Error while loading create item modal: ", error);
 	hideLoader();
 });
 
@@ -121,7 +118,6 @@ fetch("/createUserModal").then(response => {
 })
 .catch(error => {
 	console.error('Error while loading create user modal:', error);
-	alert("Error while loading create user modal: ", error);
 	hideLoader();
 });
 
@@ -167,7 +163,6 @@ const folderChanged = (folderUidToSelect, itemUidToSelect) => {
 	.catch(error => {
 		console.error('Error while listing items:', error);
 		hideLoader();
-		alert("Error while listing items: ", error);
 	});
 };
 const itemChanged = (itemUidToSelect) => {
@@ -212,7 +207,6 @@ const itemChanged = (itemUidToSelect) => {
 	.catch(error => {
 		console.error('Error while getting item:', error);
 		hideLoader();
-		alert("Error while getting item: ", error);
 	});
 };
 

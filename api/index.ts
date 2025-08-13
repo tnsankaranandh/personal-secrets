@@ -72,7 +72,6 @@ const validateSessionFilter = async (req: any, res: any, next: any) => {
 
 const connectDBFilter = async (req: any, res: any, next: any) => {
 	try {
-		console.log(connectDB);
 		await connectDB();
         next();
 	} catch (error) {

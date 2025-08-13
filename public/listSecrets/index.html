@@ -12,7 +12,181 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
 
-    <link rel="stylesheet" href="../common/styles.css">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700&display=swap');
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.login-body {
+  font-family: 'Poppins', sans-serif;
+  height: 100vh;
+  width: 100vw;
+  background-color: #7227D5;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card{
+  background: #fff;
+  width: 900px;
+  min-height: 400px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  display: flex;
+}
+
+.form,
+.image{
+  width: 50%;
+}
+
+.image{
+  background-size:cover;
+  background-position: center;
+}
+
+.overlay{
+  width: 100%;
+  height: 100%;
+  background-color: rgba(114, 39, 213, 0.31);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  
+}
+
+.overlay h3{
+  color:white;
+  letter-spacing: 1px;
+  font-size: 25px;
+  font-weight: 700;
+  opacity: 0.6;
+}
+.overlay p{
+  color:white;
+  font-size: 13px;
+  font-weight: bold;
+   opacity: 0.6;
+}
+
+
+.form{
+  padding: 60px 25px; 
+  display: flex;
+  flex-direction: column;
+}
+.form h3{
+  font-size: 28px;
+  font-weight: 500;
+  position: relative;
+  margin-bottom: 30px;
+}
+.form h3::after{
+  content: '';
+  width:30px;
+  height:3px;
+  background: #7227D5;
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  border-radius: 5px;
+}
+
+.fa{
+  color: #7227D5;
+  position: absolute;
+  top:10px;
+  font-size: 18px;
+}
+
+.input-field{
+  width: 100%;
+  margin-bottom: 10px;
+  position: relative;
+}
+.input-field input{
+  display: block; 
+  width: 100%;
+  padding: 10px 30px;
+  outline: none;
+  border:none;
+  border-bottom: 2px solid rgb(182, 180, 180);
+  font-size: 15px;
+}
+
+.form>a{
+  color:#7227D5;
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 35px
+}
+
+button{
+  height: 45px;
+  background:#7227D5;
+  border:none;
+  color:white;
+  border-radius: 5px;
+  font-size: 18px;
+}
+
+button+p{
+  text-align: center;
+  padding-top: 30px;
+  font-size: 14px;
+}
+
+button+p a{
+  text-decoration: none;
+  color:#7227D5;
+  font-weight: 500;
+}
+
+input::placeholder {
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-btn {
+  cursor: pointer;
+}
+
+.no-grey-disabled:disabled {
+    background-color: #ffffff; /* Or your desired background color */
+    opacity: 1; /* Ensure full opacity */
+    cursor: default; /* Change cursor if needed */
+}
+
+
+
+
+
+@keyframes growFont {
+    from { font-size: 1rem; }
+    to { font-size: 20rem; }
+}
+
+.animator {
+    animation-name: growFont; /* Defines the @keyframes rule to use */
+    animation-duration: .3s; /* Duration of one animation cycle */
+    animation-iteration-count: infinite; /* Repeats indefinitely */
+    animation-direction: alternate; /* Alternates direction each cycle */
+    animation-timing-function: ease-in-out; /* Optional: Controls animation speed curve */
+}
+
+.header-contents select {
+  height: 45px;
+}
+
+.header-contents {
+  border-bottom: 3px solid #ccc;
+}
+</style>
   </head>
   <body>
     <div id="loader" style="display: block;" class="min-vh-100 d-flex justify-content-center align-items-center animator">
@@ -100,6 +274,474 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
   </body>
-<script src="../common/scripts.js"></script>
-<script src="./listSecrets/scripts.js"></script>
+<script>
+const originalFetch = window.fetch;
+window.fetch = function(input, init = {}) {
+	const sessionValue = sessionStorage.getItem('UserSession') || 'dummyValue';
+
+	if (sessionValue) {
+		init.headers = {
+			...init.headers,
+			'X-Session-Data': sessionValue
+		};
+	}
+
+	return originalFetch(input, init);
+};
+
+const validateInvalidSessionFromAPIResponse = async (response) => {
+	try {
+		const errorJSON = await response.json();
+		if (errorJSON.isSessionInvalid) {
+			createBootstrapAlert("Invalid Session! Please login again.", "danger");
+			window.location.href = '/login';
+			return true;
+		}
+	} catch (sessionValidationError) {
+		console.error("Error while validating session error: ", sessionValidationError);
+	}
+	return false;
+};
+
+const createBootstrapAlert = (message, type) => {
+    const alertContainer = document.getElementById('alertContainer');
+    const alertDiv = document.createElement('div');
+    alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    alertContainer.appendChild(alertDiv);
+
+    // Optional: Automatically dismiss the alert after a few seconds
+    setTimeout(() => {
+        const bootstrapAlert = bootstrap.Alert.getInstance(alertDiv);
+        if (bootstrapAlert) {
+            bootstrapAlert.close();
+        }
+    }, 5000);
+}
+</script>
+<script>
+const showLoader = () => {
+	document.getElementById('loader').style.setProperty('display', 'block', 'important');
+	document.getElementById('contents').style.setProperty('display', 'none', 'important');
+};
+
+const hideLoader = () => {
+	document.getElementById('loader').style.setProperty('display', 'none', 'important');
+	document.getElementById('contents').style.setProperty('display', 'block', 'important');
+};
+
+let foldersLoaded = false;
+let itemsLoaded = false;
+let createFolderModalLoaded = false;
+let createItemModalLoaded = false;
+let createUserModalLoaded = false;
+
+const checkAndHideLoader = () => {
+	if (
+		foldersLoaded &&
+		itemsLoaded &&
+		createFolderModalLoaded &&
+		createItemModalLoaded &&
+		createUserModalLoaded
+	) {
+		hideLoader();
+	} else {
+		showLoader();
+	}
+};
+
+let folders = [];
+let selectedFolderUid
+const updateFolderList = (folderUidToSelect, itemUidToSelect) => {
+	fetch("/folders/list").then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			throw new Error('Network response was not ok for list folder');
+		}
+		return response.json();
+	})
+	.then(data => {
+		folders = data?.folders || [];
+
+		folderSelectElement = document.getElementById('folderSelect');
+		const optionsLength = folderSelectElement.options.length;
+		for (i = optionsLength - 1; i >= 0; i--) {
+			folderSelectElement.remove(i);
+		}
+		foldersLoaded = true;
+		folders.forEach(f => {
+    		const newOption = new Option(f.name, f._id);
+		    folderSelectElement.add(newOption);
+		});
+		if (folderUidToSelect) {
+			folderChanged(folderUidToSelect, itemUidToSelect);
+		} else {
+			folderChanged(folders[0]?._id, itemUidToSelect);
+		}
+	})
+	.catch(error => {
+		console.error('Error while listing folders:', error);
+		hideLoader();
+	});
+};
+updateFolderList();
+
+fetch("/createFolderModal").then(response => {
+	if (!response.ok) {
+		throw new Error('Network response was not ok for fetching create folder modal');
+	}
+	return response.text();
+})
+.then(data => {
+	document.getElementById('createFolderModal').innerHTML = data;
+	// const script = document.createElement('script');
+    // script.src = '../createFolderModal/scripts.js';
+    // document.head.appendChild(script);
+	createFolderModalLoaded = true;
+	checkAndHideLoader();
+})
+.catch(error => {
+	console.error('Error while loading create folder modal:', error);
+	hideLoader();
+});
+
+fetch("/createItemModal").then(response => {
+	if (!response.ok) {
+		throw new Error('Network response was not ok for fetching create item modal');
+	}
+	return response.text();
+})
+.then(data => {
+	document.getElementById('createItemModal').innerHTML = data;
+	// const script = document.createElement('script');
+    // script.src = '../createItemModal/scripts.js';
+    // document.head.appendChild(script);
+	createItemModalLoaded = true;
+	checkAndHideLoader();
+})
+.catch(error => {
+	console.error('Error while loading create item modal:', error);
+	hideLoader();
+});
+
+fetch("/createUserModal").then(response => {
+	if (!response.ok) {
+		throw new Error('Network response was not ok for fetching create user modal');
+	}
+	return response.text();
+})
+.then(data => {
+	document.getElementById('createUserModal').innerHTML = data;
+	// const script = document.createElement('script');
+    // script.src = '../createUserModal/scripts.js';
+    // document.head.appendChild(script);
+	createUserModalLoaded = true;
+	checkAndHideLoader();
+})
+.catch(error => {
+	console.error('Error while loading create user modal:', error);
+	hideLoader();
+});
+
+const folderChanged = (folderUidToSelect, itemUidToSelect) => {
+	if (folderUidToSelect) {
+		document.getElementById('folderSelect').value = folderUidToSelect;
+	}
+	const selectedFolderUid = document.getElementById('folderSelect').value;
+	if (!selectedFolderUid) {
+		itemsLoaded = true;
+		checkAndHideLoader();
+		return console.log('selectedFolderUid is null. Hence can not load items! ', selectedFolderUid);
+	}
+	fetch("/items/list/" + selectedFolderUid).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) return;
+
+			throw new Error('Network response was not ok for list items');
+		}
+		return response.json();
+	})
+	.then(data => {
+		items = data?.items || [];
+
+		itemSelectElement = document.getElementById('itemSelect');
+		const optionsLength = itemSelectElement.options.length;
+		for (i = optionsLength - 1; i >= 0; i--) {
+			itemSelectElement.remove(i);
+		}
+		items.forEach(i => {
+    		const newOption = new Option(i.title, i._id);
+		    itemSelectElement.add(newOption);
+		});
+		if (itemUidToSelect)
+			itemChanged(itemUidToSelect);
+		else if (items[0]?._id)
+			itemChanged(items[0]?._id);
+		else {
+			itemsLoaded = true;
+			checkAndHideLoader();
+		}
+	})
+	.catch(error => {
+		console.error('Error while listing items:', error);
+		hideLoader();
+	});
+};
+const itemChanged = (itemUidToSelect) => {
+	showLoader();
+	if (itemUidToSelect) {
+		document.getElementById('itemSelect').value = itemUidToSelect;
+	}
+	const selectedItemUid = document.getElementById('itemSelect').value;
+	fetch("/item/" + selectedItemUid).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) return;
+
+			throw new Error('Network response was not ok for get item');
+		}
+		return response.json();
+	})
+	.then(data => {
+		const { item } = data || {};
+		document.getElementById('itemDetailTitle').value = item.title;
+		document.getElementById('itemDetailUsername').value = item.username;
+		document.getElementById('itemDetailPassword').value = item.password;
+		const otherFieldKeys = Object.keys(item.otherFields || {});
+		document.getElementById('itemDetailOtherFields').innerHTML = '';
+		otherFieldKeys.forEach(ofK => {
+			let fieldHtml = '<div>\
+				\
+				<div class="input-group input-group-lg">\
+					<span class="input-group-text p-0 pr-2 pl-2" id="inputGroup-sizing-lg">\
+						<input type="text" disabled class="form-control" placeholder="Key" value="' + ofK + '">\
+					</span>\
+					<input type="text" disabled class="form-control" placeholder="Value" value="' + item.otherFields[ofK] + '">\
+				</div>\
+			</div>';
+			const otherFieldsElement = document.getElementById('itemDetailOtherFields');
+			const newFieldElement = document.createElement('div');
+			newFieldElement.innerHTML = fieldHtml;
+			otherFieldsElement.appendChild(newFieldElement);
+		});
+		hideLoader();
+	})
+	.catch(error => {
+		console.error('Error while getting item:', error);
+		hideLoader();
+	});
+};
+
+const createFolderModalInstance = new bootstrap.Modal(document.getElementById('createFolderModal'), {});
+const openCreateFolderModal = () => {
+	createFolderModalInstance.show();
+};
+const createItemModalInstance = new bootstrap.Modal(document.getElementById('createItemModal'), {});
+const openCreateItemModal = () => {
+	createItemModalInstance.show();
+	window.postMessage({ type: 'createItemModalShown' });
+};
+const createUserModalInstance = new bootstrap.Modal(document.getElementById('createUserModal'), {});
+const openCreateUserModal = () => {
+	createUserModalInstance.show();
+};
+
+
+
+window.addEventListener('message', function(event) {
+    const receivedData = event.data;
+    switch (receivedData?.type) {
+    	case 'updateSelectedFolder':
+	        createFolderModalInstance.hide();
+	        updateFolderList(receivedData.content);
+	        break;
+	    case 'updatedSelectedFolderAndItem':
+	        createItemModalInstance.hide();
+	        updateFolderList(receivedData.content.folderUid, receivedData.content.itemUid);
+	        break;
+	    case 'userCreated':
+	        createUserModalInstance.hide();
+	        break;
+    }
+});
+</script>
+<script>
+const createFolder = () => {
+	const name = document.getElementById("newFolderName").value;
+	if (!name) {
+		return alert("Invalid name!");
+	}
+	fetch("/folder/create", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			name
+		})
+	}).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			throw new Error('Network response was not ok for create folder');
+		}
+		return response.json();
+	})
+	.then(data => {
+		window.postMessage({ type: 'updateSelectedFolder', content: data._id });
+	})
+	.catch(error => {
+		console.error('Error while creating folder:', error);
+	});
+};
+</script>
+<script>
+const createItem = () => {
+	const folderUid = document.getElementById("newItemFolderUid").value;
+	const title = document.getElementById("newItemTitle").value;
+	const username = document.getElementById("newItemUsername").value;
+	const password = document.getElementById("newItemPassword").value;
+	if (!title) {
+		return alert("Invalid title!");
+	}
+	fetch("/item/create", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			folderUid,
+			title,
+			username,
+			password,
+			otherFields: generateOtherFields(),
+		})
+	}).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			throw new Error('Network response was not ok for create item');
+		}
+		return response.json();
+	})
+	.then(data => {
+		window.postMessage({ type: 'updatedSelectedFolderAndItem', content: {
+			folderUid: data.folderUid,
+			itemUid: data._id,
+		} });
+	})
+	.catch(error => {
+		console.error('Error while creating item:', error);
+	});
+};
+
+const generateOtherFields = () => {
+	const allOtherFieldsKeyElements = document.querySelectorAll('[id^="newItemFieldKey"]');
+	const allOtherFieldsValueElements = document.querySelectorAll('[id^="newItemFieldValue"]');
+	const otherFieldsObject = {};
+	allOtherFieldsKeyElements.forEach((_, index) => {
+		otherFieldsObject[allOtherFieldsKeyElements[index].value] = allOtherFieldsValueElements[index].value;
+	});
+	return otherFieldsObject;
+};
+
+const updateFolderListForCreateItemModal = () => {
+	fetch("/folders/list").then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			throw new Error('Network response was not ok for list folder in create item modal');
+		}
+		return response.json();
+	})
+	.then(data => {
+		const foldersList = data?.folders || [];
+
+		createItemModalFolderSelectElement = document.getElementById('newItemFolderUid');
+		const optionsLength = createItemModalFolderSelectElement.options.length;
+		for (i = optionsLength - 1; i >= 0; i--) {
+			createItemModalFolderSelectElement.remove(i);
+		}
+		foldersList.forEach(f => {
+    		const newOption = new Option(f.name, f._id);
+		    createItemModalFolderSelectElement.add(newOption);
+		});
+	})
+	.catch(error => {
+		console.error('Error while listing folders in create item modal:', error);
+		alert("Error while listing folders in create item modal: ", error);
+	});
+};
+
+let randomIndexForAdditionalItemFields = 0;
+const addItemField = () => {
+	randomIndexForAdditionalItemFields++;
+	const tempRandomIndexForAdditionalItemFields = randomIndexForAdditionalItemFields;
+	let fieldHtml = '<div>\
+		\
+		<div class="input-group input-group-lg">\
+			<span class="input-group-text p-0 pr-2 pl-2" id="inputGroup-sizing-lg">\
+				<button id="additionalField' + tempRandomIndexForAdditionalItemFields + 'remover" class="btn btn-danger mr-1"><i class="bi bi-trash"></i></button>\
+				<input type="text" class="form-control" id="newItemFieldKey' + tempRandomIndexForAdditionalItemFields + '" placeholder="Key">\
+			</span>\
+			<input type="text" class="form-control" id="newItemFieldValue' + tempRandomIndexForAdditionalItemFields + '" placeholder="Value">\
+		</div>\
+	</div>';
+	const additionalItemFieldsElement = document.getElementById('additionalItemFields');
+	const newFieldElement = document.createElement('div');
+	newFieldElement.setAttribute('id', 'additionalItemFieldIndex' + tempRandomIndexForAdditionalItemFields);
+	newFieldElement.classList.add('mt-3');
+	newFieldElement.innerHTML = fieldHtml;
+	additionalItemFieldsElement.appendChild(newFieldElement);
+	document.getElementById('additionalField' + tempRandomIndexForAdditionalItemFields + 'remover').addEventListener('click', () => {
+		removeAdditionalField(tempRandomIndexForAdditionalItemFields);
+	});
+};
+
+const removeAdditionalField = index => {
+	document.getElementById('additionalItemFieldIndex' + index).remove();
+};
+
+window.addEventListener('message', function(event) {
+    const receivedData = event.data;
+    console.log('Received message in create item modal:', receivedData);
+    switch (receivedData?.type) {
+    	case 'createItemModalShown':
+    		updateFolderListForCreateItemModal();
+	        break;
+    }
+});
+</script>
+<script>
+const createUser = () => {
+	const emailid = document.getElementById("newUserEmailID").value;
+	const role = document.getElementById("newUserRole").value;
+	const username = document.getElementById("newUserUserName").value;
+	const password = document.getElementById("newUserPassword").value;
+	fetch("/user/create", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			emailid,
+			username,
+			role,
+			password,
+		})
+	}).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			throw new Error('Network response was not ok for create user');
+		}
+		return response.json();
+	})
+	.then(data => {
+		window.postMessage({ type: 'userCreated', });
+	})
+	.catch(error => {
+		console.error('Error while creating user:', error);
+	});
+};
+</script>
 </html>

@@ -72,9 +72,9 @@ fetch("/createFolderModal").then(response => {
 })
 .then(data => {
 	document.getElementById('createFolderModal').innerHTML = data;
-	const script = document.createElement('script');
-    script.src = '../createFolderModal/scripts.js';
-    document.head.appendChild(script);
+	// const script = document.createElement('script');
+    // script.src = '../createFolderModal/scripts.js';
+    // document.head.appendChild(script);
 	createFolderModalLoaded = true;
 	checkAndHideLoader();
 })
@@ -91,9 +91,9 @@ fetch("/createItemModal").then(response => {
 })
 .then(data => {
 	document.getElementById('createItemModal').innerHTML = data;
-	const script = document.createElement('script');
-    script.src = '../createItemModal/scripts.js';
-    document.head.appendChild(script);
+	// const script = document.createElement('script');
+    // script.src = '../createItemModal/scripts.js';
+    // document.head.appendChild(script);
 	createItemModalLoaded = true;
 	checkAndHideLoader();
 })
@@ -110,9 +110,9 @@ fetch("/createUserModal").then(response => {
 })
 .then(data => {
 	document.getElementById('createUserModal').innerHTML = data;
-	const script = document.createElement('script');
-    script.src = '../createUserModal/scripts.js';
-    document.head.appendChild(script);
+	// const script = document.createElement('script');
+    // script.src = '../createUserModal/scripts.js';
+    // document.head.appendChild(script);
 	createUserModalLoaded = true;
 	checkAndHideLoader();
 })
@@ -181,7 +181,6 @@ const itemChanged = (itemUidToSelect) => {
 	})
 	.then(data => {
 		const { item } = data || {};
-		console.log(item, ' Item Object from API');
 		document.getElementById('itemDetailTitle').value = item.title;
 		document.getElementById('itemDetailUsername').value = item.username;
 		document.getElementById('itemDetailPassword').value = item.password;

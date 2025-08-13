@@ -57,7 +57,7 @@ app.use(cors(corsOptions));
 
 
 const routesToIgnoreSessionValidation = [
-	'/login',
+	'/authenticateUser',
 	'/.well-known/appspecific/com.chrome.devtools.json'
 ];
 const validateSession = async (req: any, res: any, next: any) => {

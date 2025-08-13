@@ -60,7 +60,7 @@ const routesToIgnoreSessionValidation = [
 	'/authenticateUser',
 	'/.well-known/appspecific/com.chrome.devtools.json'
 ];
-const validateSession = async (req: any, res: any, next: any) => {
+const validateSessionFilter = async (req: any, res: any, next: any) => {
 	try {
 		console.log('Route received in server is:');
 		console.log(req.originalUrl);
@@ -91,7 +91,7 @@ const connectDBFilter = async (req: any, res: any, next: any) => {
 	}
 };
 
-app.post('/authenticateUser', validateSession, connectDBFilter, UserAPI.authenticate);
+app.post('/authenticateUser', validateSessionFilter, connectDBFilter, UserAPI.authenticate);
 // app.get('/folders/list', validateSession, connectDBFilter, FolderAPI.list);
 // app.post('/folder/create', validateSession, connectDBFilter, FolderAPI.create);
 // app.get('/items/list/:folderUid', validateSession, connectDBFilter, ItemAPI.list);

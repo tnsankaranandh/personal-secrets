@@ -186,6 +186,10 @@ input::placeholder {
 .header-contents {
   border-bottom: 3px solid #ccc;
 }
+
+input:disabled {
+  background: white !important;
+}
 </style>
   </head>
   <body>
@@ -224,19 +228,19 @@ input::placeholder {
                       <div class="row justify-content-between">
                         <div class="input-group input-group-lg">
                           <span class="input-group-text" id="inputGroup-sizing-lg"><i class="bi bi-database-fill"></i></span>
-                          <input type="text" class="form-control" id="itemDetailTitle">
+                          <input type="text" disabled class="form-control" id="itemDetailTitle">
                         </div>
                       </div>
                       <div class="row justify-content-between">
                         <div class="input-group input-group-lg">
                           <span class="input-group-text" id="inputGroup-sizing-lg"><i class="bi bi-person-bounding-box"></i></span>
-                          <input type="text" class="form-control" id="itemDetailUsername">
+                          <input type="text" disabled class="form-control" id="itemDetailUsername">
                         </div>
                       </div>
                       <div class="row justify-content-between">
                         <div class="input-group input-group-lg">
                           <span class="input-group-text" id="inputGroup-sizing-lg"><i class="bi bi-lock"></i></span>
-                          <input type="text" class="form-control" id="itemDetailPassword">
+                          <input type="password" disabled class="form-control" id="itemDetailPassword">
                         </div>
                       </div>
                       <div class="row justify-content-between">
@@ -398,9 +402,6 @@ fetch("/createFolderModal").then(response => {
 })
 .then(data => {
 	document.getElementById('createFolderModal').innerHTML = data;
-	// const script = document.createElement('script');
-    // script.src = '../createFolderModal/scripts.js';
-    // document.head.appendChild(script);
 	createFolderModalLoaded = true;
 	checkAndHideLoader();
 })
@@ -417,9 +418,6 @@ fetch("/createItemModal").then(response => {
 })
 .then(data => {
 	document.getElementById('createItemModal').innerHTML = data;
-	// const script = document.createElement('script');
-    // script.src = '../createItemModal/scripts.js';
-    // document.head.appendChild(script);
 	createItemModalLoaded = true;
 	checkAndHideLoader();
 })
@@ -436,9 +434,6 @@ fetch("/createUserModal").then(response => {
 })
 .then(data => {
 	document.getElementById('createUserModal').innerHTML = data;
-	// const script = document.createElement('script');
-    // script.src = '../createUserModal/scripts.js';
-    // document.head.appendChild(script);
 	createUserModalLoaded = true;
 	checkAndHideLoader();
 })

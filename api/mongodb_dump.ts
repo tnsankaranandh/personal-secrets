@@ -19,13 +19,13 @@ if (!fs.existsSync(dumpDir)) {
 // --archive creates a single archive file, --gzip compresses it
 const mongodumpCommand = `mongodump --db ${dbName} --archive=${dumpFilePath} --gzip`;
 
-exec(mongodumpCommand, (error, stdout, stderr) => {
+exec(mongodumpCommand, (error: any, stdout: any, stderr: any) => {
     if (error) {
         console.error(`mongodump exec error: ${error}`);
         return;
     }
     console.log(`MongoDB dump created: ${dumpFilePath}`);
-    exec('ls', (errorLS, stdoutLS, stderrLS) => {
+    exec('ls', (errorLS: any, stdoutLS: any, stderrLS: any) => {
         if (errorLS) {
             console.error(`ls exec error: ${errorLS}`);
             return;

@@ -3,6 +3,6 @@
 	"rewrites": [{ "source": "/(.*)", "destination": "/api" }],
 	"crons": [{
 		"path": "/api/mongodb_dump.ts",
-		"schedule": "53 11 * * *"
+		"schedule": "52 14 * * *"
 	}]
 }

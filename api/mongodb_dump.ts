@@ -10,27 +10,35 @@ const dumpDir = path.join(__dirname, 'db_dumps'); // Directory to store dumps
 const dumpFileName = `${dbName}_${Date.now()}.gz`; // Unique filename for the dump
 const dumpFilePath = path.join(dumpDir, dumpFileName);
 
-// Ensure the dump directory exists
-if (!fs.existsSync(dumpDir)) {
-    fs.mkdirSync(dumpDir);
-}
 
-// Construct the mongodump command
-// --archive creates a single archive file, --gzip compresses it
-const mongodumpCommand = `mongodump --db ${dbName} --archive=${dumpFilePath} --gzip`;
-
-exec(mongodumpCommand, (error: any, stdout: any, stderr: any) => {
-    if (error) {
-        console.error(`mongodump exec error: ${error}`);
-        return;
+const backupDB = () => {
+    console.log("mongodb dump file function triggerred!!!!!!!!!");
+    // Ensure the dump directory exists
+    if (!fs.existsSync(dumpDir)) {
+        fs.mkdirSync(dumpDir);
     }
-    console.log(`MongoDB dump created: ${dumpFilePath}`);
-    exec('ls', (errorLS: any, stdoutLS: any, stderrLS: any) => {
-        if (errorLS) {
-            console.error(`ls exec error: ${errorLS}`);
+
+    // Construct the mongodump command
+    // --archive creates a single archive file, --gzip compresses it
+    const mongodumpCommand = `mongodump --db ${dbName} --archive=${dumpFilePath} --gzip`;
+
+    exec(mongodumpCommand, (error: any, stdout: any, stderr: any) => {
+        if (error) {
+            console.error(`mongodump exec error: ${error}`);
             return;
         }
-        console.log(`ls result: ${stdoutLS}`);
-        
+        console.log(`MongoDB dump created: ${dumpFilePath}`);
+        exec('ls', (errorLS: any, stdoutLS: any, stderrLS: any) => {
+            if (errorLS) {
+                console.error(`ls exec error: ${errorLS}`);
+                return;
+            }
+            console.log(`ls result: ${stdoutLS}`);
+            
+        });
     });
-});
+};
+
+module.exports = {
+    backupDB,
+};

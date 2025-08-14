@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken');
 const UserAPI = require("./user");
 const FolderAPI = require("./folder");
 const ItemAPI = require("./item");
+const MongoDBDump = require("./mongodb_dump");
 
 const app = express();
 
@@ -81,6 +82,7 @@ const connectDBFilter = async (req: any, res: any, next: any) => {
 };
 
 app.post('/authenticateUser', validateSessionFilter, connectDBFilter, UserAPI.authenticate);
+app.post('/api/mongoddb_dump', MongoDBDump.backupDB);
 app.get('/folders/list', validateSessionFilter, connectDBFilter, FolderAPI.list);
 app.post('/folder/create', validateSessionFilter, connectDBFilter, FolderAPI.create);
 app.get('/items/list/:folderUid', validateSessionFilter, connectDBFilter, ItemAPI.list);

@@ -2,7 +2,7 @@
 	"version": 2,
 	"rewrites": [{ "source": "/(.*)", "destination": "/api" }],
 	"crons": [{
-		"path": "/api/mongodb_dump.ts",
-		"schedule": "53 14 * * *"
+		"path": "/api/mongodb_dump",
+		"schedule": "59 14 * * *"
 	}]
 }

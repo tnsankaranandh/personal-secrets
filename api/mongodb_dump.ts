@@ -11,9 +11,9 @@ const dumpFileName = `${dbName}_${Date.now()}.gz`; // Unique filename for the du
 const dumpFilePath = path.join(dumpDir, dumpFileName);
 
 
-const backupDB = () => {
+const backupDB: Function = () => {
     console.log("mongodb dump file function triggerred!!!!!!!!!");
-    
+
     // Ensure the dump directory exists
     if (!fs.existsSync(dumpDir)) {
         fs.mkdirSync(dumpDir);
@@ -35,7 +35,6 @@ const backupDB = () => {
                 return;
             }
             console.log(`ls result: ${stdoutLS}`);
-            
         });
     });
 };

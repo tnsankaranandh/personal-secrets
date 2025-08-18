@@ -39,6 +39,4 @@ const backupDB: Function = () => {
     });
 };
 
-module.exports = {
-    backupDB,
-};
+export default backupDB;

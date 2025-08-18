@@ -13,6 +13,7 @@ const dumpFilePath = path.join(dumpDir, dumpFileName);
 
 const backupDB = () => {
     console.log("mongodb dump file function triggerred!!!!!!!!!");
+    
     // Ensure the dump directory exists
     if (!fs.existsSync(dumpDir)) {
         fs.mkdirSync(dumpDir);

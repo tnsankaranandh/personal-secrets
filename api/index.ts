@@ -11,7 +11,6 @@ const jwt = require('jsonwebtoken');
 const UserAPI = require("./user");
 const FolderAPI = require("./folder");
 const ItemAPI = require("./item");
-const MongoDBDump = require("./mongodb_dump");
 
 const app = express();
 
@@ -81,7 +80,6 @@ const connectDBFilter = async (req: any, res: any, next: any) => {
 	}
 };
 
-app.get('/api/mongoddb_dump', MongoDBDump.backupDB);
 app.post('/authenticateUser', validateSessionFilter, connectDBFilter, UserAPI.authenticate);
 app.get('/folders/list', validateSessionFilter, connectDBFilter, FolderAPI.list);
 app.post('/folder/create', validateSessionFilter, connectDBFilter, FolderAPI.create);
@@ -99,6 +97,14 @@ app.use(function(error: any, request: any, response: any, next: any) {
     console.log(error);
     response.status(500).send('Internal Server Error');
 });
+
+const { put } = require("@vercel/blob");
+async function putFile() {
+	const { url } = await put('articles/blob.txt', 'Hello World!', { access: 'public' });
+	console.log(url, ': url');
+}
+putFile();
+
 
 
 app.listen(8000, () => { console.log('Server ready on port 8000.')} );

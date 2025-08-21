@@ -1,0 +1,1 @@
+mongorestore --uri "mongodb+srv://vercel-admin-user-687f6fab4933e866fca4e53f:JY6OjkH5WyeCh7Cw@personalsecrets.hcizn.mongodb.net/secrets-db?retryWrites=true&w=majority"  --gzip --archive=db.secrets-db.curly-sound-7239.b24948.25-08-18_100213.bin.gz  --nsFrom "secrets-db.*" --nsTo "new-secrets-db.*"

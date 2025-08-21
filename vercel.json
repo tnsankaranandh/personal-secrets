@@ -1,8 +1,4 @@
 {
 	"version": 2,
-	"rewrites": [{ "source": "/(.*)", "destination": "/api" }],
-	"crons": [{
-		"path": "/api/mongodb_dump",
-		"schedule": "58 11 * * *"
-	}]
+	"rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }

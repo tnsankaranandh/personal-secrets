@@ -92,13 +92,20 @@ app.post('/user/create', validateSessionFilter, connectDBFilter, UserAPI.create)
 app.all('*', (req: any, res: any) => res.redirect('/login'));
 
 app.use(function(error: any, request: any, response: any, next: any) {
-    // Handle the error
-    console.log("internal error has occurred!!!!");
-    console.log(error);
-    response.status(500).send('Internal Server Error');
+	console.error(error);
+    response.status(500).send(error.message || 'Internal Server Error');
 });
 
 
 app.listen(8000, () => { console.log('Server ready on port 8000.')} );
 
 module.exports = app;
+
+
+import * as bcrypt from 'bcryptjs';
+async function logs() {
+	console.log('viewer - ', await bcrypt.hash('viewer', await bcrypt.genSalt(10)));
+	console.log('creator - ', await bcrypt.hash('creator', await bcrypt.genSalt(10)));
+	console.log('admin - ', await bcrypt.hash('admin', await bcrypt.genSalt(10)));
+};
+logs();

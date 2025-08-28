@@ -11,8 +11,8 @@ const userSchema: any = new Schema(
     password: String,
     role: {
       type: String,
-      default: 'accessor',
-      enum: ['accessor', 'admin'],
+      default: 'viewer',
+      enum: ['viewer', 'creator', 'admin'],
     },
   },
   { timestamps: true }

@@ -1,3 +1,57 @@
+const validateSession = () => {
+	if (!sessionStorage.getItem('UserSession')) {
+		window.location.href = '/login';
+		return false;
+	}
+	return true;
+};
+
+const hideAllActionButtons = () => {
+	document.getElementById('createFolderBtn').style.visibility = 'hidden';
+	document.getElementById('createItemBtn').style.visibility = 'hidden';
+	document.getElementById('createUserBtn').style.visibility = 'hidden';
+	document.getElementById('editFolderBtn').style.visibility = 'hidden';
+	document.getElementById('editItemBtn').style.visibility = 'hidden';
+	document.getElementById('editUserBtn').style.visibility = 'hidden';
+};
+
+const enableActionButtonsBasedOnRole = role => {
+	switch (role) {
+		case 'viewer':
+			document.getElementById('createFolderBtn').style.visibility = 'hidden';
+			document.getElementById('createItemBtn').style.visibility = 'hidden';
+			document.getElementById('createUserBtn').style.visibility = 'hidden';
+			document.getElementById('editFolderBtn').style.visibility = 'hidden';
+			document.getElementById('editItemBtn').style.visibility = 'hidden';
+			document.getElementById('editUserBtn').style.visibility = 'hidden';
+			break;
+		case 'creator':
+			document.getElementById('createFolderBtn').style.visibility = 'block';
+			document.getElementById('createItemBtn').style.visibility = 'block';
+			document.getElementById('createUserBtn').style.visibility = 'hidden';
+			document.getElementById('editFolderBtn').style.visibility = 'visible';
+			document.getElementById('editItemBtn').style.visibility = 'visible';
+			document.getElementById('editUserBtn').style.visibility = 'visible';
+			break;
+		case 'admin':
+			document.getElementById('createFolderBtn').style.visibility = 'visible';
+			document.getElementById('createItemBtn').style.visibility = 'visible';
+			document.getElementById('createUserBtn').style.visibility = 'visible';
+			document.getElementById('editFolderBtn').style.visibility = 'visible';
+			document.getElementById('editItemBtn').style.visibility = 'visible';
+			document.getElementById('editUserBtn').style.visibility = 'visible';
+			break;
+	}
+};
+
+window.addEventListener('pageshow', () => {
+	hideAllActionButtons();
+	if (validateSession()) {
+		enableActionButtonsBasedOnRole(sessionStorage.getItem('UserRole'));
+	}
+});
+
+
 const showLoader = () => {
 	document.getElementById('loader').style.setProperty('display', 'block', 'important');
 	document.getElementById('contents').style.setProperty('display', 'none', 'important');
@@ -29,11 +83,12 @@ const checkAndHideLoader = () => {
 };
 
 let folders = [];
-let selectedFolderUid
+let selectedFolderUid;
 const updateFolderList = (folderUidToSelect, itemUidToSelect) => {
 	fetch("/folders/list").then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 			throw new Error('Network response was not ok for list folder');
 		}
 		return response.json();
@@ -124,7 +179,8 @@ const folderChanged = (folderUidToSelect, itemUidToSelect) => {
 	}
 	fetch("/items/list/" + selectedFolderUid).then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 
 			throw new Error('Network response was not ok for list items');
 		}
@@ -164,7 +220,8 @@ const itemChanged = (itemUidToSelect) => {
 	const selectedItemUid = document.getElementById('itemSelect').value;
 	fetch("/item/" + selectedItemUid).then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response))
+				throw new Error("Invalid Session!");
 
 			throw new Error('Network response was not ok for get item');
 		}
@@ -201,7 +258,7 @@ const itemChanged = (itemUidToSelect) => {
 };
 
 const createFolderModalInstance = new bootstrap.Modal(document.getElementById('createFolderModal'), {});
-const openCreateFolderModal = () => {
+const openCreateFolderModal = (editMode) => {
 	createFolderModalInstance.show();
 };
 const createItemModalInstance = new bootstrap.Modal(document.getElementById('createItemModal'), {});
@@ -214,6 +271,10 @@ const openCreateUserModal = () => {
 	createUserModalInstance.show();
 };
 
+const logOut = () => {
+	sessionStorage.removeItem('UserSession');
+	window.location.href = '/login';
+};
 
 
 window.addEventListener('message', function(event) {

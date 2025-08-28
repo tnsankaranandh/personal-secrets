@@ -20,7 +20,8 @@ const createItem = () => {
 		})
 	}).then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 			throw new Error('Network response was not ok for create item');
 		}
 		return response.json();
@@ -49,7 +50,8 @@ const generateOtherFields = () => {
 const updateFolderListForCreateItemModal = () => {
 	fetch("/folders/list").then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 			throw new Error('Network response was not ok for list folder in create item modal');
 		}
 		return response.json();

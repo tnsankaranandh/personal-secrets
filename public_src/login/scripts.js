@@ -16,9 +16,19 @@ const login = () => {
 	})
 	.then(data => {
 		sessionStorage.setItem("UserSession",data.user.sessionToken);
+		sessionStorage.setItem("UserRole",data.user.role);
 		window.location.href = '/listSecrets';
 	})
 	.catch(error => {
 		console.error('Error while logging in:', error);
 	});
 };
+
+window.addEventListener('pageshow', () => {
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const isInvalidSession = urlParams.get('invalidSession');
+	if (isInvalidSession === 'true') {
+		createBootstrapAlert("Invalid Session! Please login again.", "danger");
+	}
+});

@@ -16,7 +16,8 @@
             <span class="input-group-text w-100">Role:</span>
           </div>
         <select id="newUserRole" class="form-select form-select-lg custom-select" aria-label=".form-select-lg example">
-            <option value="accessor" selected>Accessor</option>
+            <option value="viewer" selected>Viewer</option>
+            <option value="creator" selected>Creator</option>
             <option value="admin" selected>Admin</option>
         </select>
         </div>
@@ -62,7 +63,8 @@ const createUser = () => {
 		})
 	}).then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 			throw new Error('Network response was not ok for create user');
 		}
 		return response.json();

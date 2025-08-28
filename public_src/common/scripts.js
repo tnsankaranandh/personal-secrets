@@ -1,6 +1,6 @@
 const originalFetch = window.fetch;
 window.fetch = function(input, init = {}) {
-	const sessionValue = sessionStorage.getItem('UserSession') || 'dummyValue';
+	const sessionValue = sessionStorage.getItem('UserSession');
 
 	if (sessionValue) {
 		init.headers = {
@@ -16,8 +16,7 @@ const validateInvalidSessionFromAPIResponse = async (response) => {
 	try {
 		const errorJSON = await response.json();
 		if (errorJSON.isSessionInvalid) {
-			createBootstrapAlert("Invalid Session! Please login again.", "danger");
-			window.location.href = '/login';
+			window.location.href = '/login?invalidSession=true';
 			return true;
 		}
 	} catch (sessionValidationError) {
@@ -26,22 +25,28 @@ const validateInvalidSessionFromAPIResponse = async (response) => {
 	return false;
 };
 
+let alertElementCount = 0;
 const createBootstrapAlert = (message, type) => {
-    const alertContainer = document.getElementById('alertContainer');
-    const alertDiv = document.createElement('div');
-    alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
-    alertDiv.setAttribute('role', 'alert');
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-    alertContainer.appendChild(alertDiv);
+	alertElementCount++;
+	const alertElement = document.createElement('div');
+	alertElement.className = `alert alert-${type} fade show`;
+	alertElement.setAttribute('role', 'alert');
+	alertElement.setAttribute('id', 'alert' + alertElementCount);
 
-    // Optional: Automatically dismiss the alert after a few seconds
-    setTimeout(() => {
-        const bootstrapAlert = bootstrap.Alert.getInstance(alertDiv);
-        if (bootstrapAlert) {
-            bootstrapAlert.close();
-        }
-    }, 5000);
+	const messageSpan = document.createElement('span');
+	messageSpan.className = `pr-5`;
+	messageSpan.textContent = message;
+	alertElement.appendChild(messageSpan);
+	const closeButton = document.createElement('button');
+	closeButton.innerHTML = '<i class="bi bi-x"></i>';
+	closeButton.className = `btn btn-danger`;
+	alertElement.appendChild(closeButton);
+
+	document.getElementById('alertContainer').appendChild(alertElement);
+	
+	closeButton.addEventListener('click', () => {
+		document.getElementById('alert' + alertElementCount).remove();
+	});
+
+	setTimeout(() => { closeButton.click(); }, 5500);
 }

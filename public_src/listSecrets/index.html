@@ -30,17 +30,25 @@
               <div class="col-auto">
                 <select id="folderSelect" class="form-select form-select-lg mb-2 custom-select w-auto" aria-label=".form-select-lg example" onchange="folderChanged()">
                 </select>
-                <button type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateFolderModal()">
+                <button id="editFolderBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateFolderModal(true)">
+                  <i class="bi bi-pencil-square"></i> Edit Selected Folder
+                </button>
+                <button id="createFolderBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateFolderModal()">
                   <i class="bi bi-plus"></i> Create Folder
                 </button>
                 <select id="itemSelect" class="form-select form-select-lg mb-2 custom-select w-auto" aria-label=".form-select-lg example" onchange="itemChanged()">
                 </select>
-                <button type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateItemModal()">
+                <button id="editItemBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateItemModal(true)">
+                  <i class="bi bi-pencil-square"></i> Edit Selected Item
+                </button>
+                <button id="createItemBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateItemModal()">
                   <i class="bi bi-plus"></i> Create Item
                 </button>
               </div>
               <div class="col-auto">
-                <button type="button" class="btn btn-info mb-3 mt-2" onClick="openCreateUserModal()">+ Create User</button>
+                <button id="editUserBtn" type="button" class="btn btn-info mb-3 mt-2" onClick="openCreateUserModal(true)"><i class="bi bi-pencil-square"></i> Edit Current User</button>
+                <button id="createUserBtn" type="button" class="btn btn-info mb-3 mt-2" onClick="openCreateUserModal()"><i class="bi bi-plus"></i> Create User</button>
+                <button type="button" class="btn btn-info mb-3 mt-2" onClick="logOut()"><i class="bi bi-box-arrow-right"></i></button>
               </div>
             </div>
             <div class="row justify-content-left p-3">
@@ -82,16 +90,13 @@
       </div>
     </div>
 
-    <div class="modal" id="createFolderModal" role="dialog">
+    <div class="modal" id="createFolderModal" role="dialog" data-folder="">
     </div>
 
-    <div class="modal" id="createUserModal" role="dialog">
+    <div class="modal" id="createUserModal" role="dialog" data-user="">
     </div>
 
-    <div class="modal" id="createItemModal" role="dialog">
-    </div>
-
-    <div id="alertContainer">
+    <div class="modal" id="createItemModal" role="dialog" data-item="">
     </div>
 
 

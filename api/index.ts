@@ -98,14 +98,6 @@ app.use(function(error: any, request: any, response: any, next: any) {
     response.status(500).send('Internal Server Error');
 });
 
-const { put } = require("@vercel/blob");
-async function putFile() {
-	const { url } = await put('articles/blob.txt', 'Hello World!', { access: 'public' });
-	console.log(url, ': url');
-}
-putFile();
-
-
 
 app.listen(8000, () => { console.log('Server ready on port 8000.')} );
 

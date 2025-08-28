@@ -33,7 +33,8 @@ let selectedFolderUid
 const updateFolderList = (folderUidToSelect, itemUidToSelect) => {
 	fetch("/folders/list").then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 			throw new Error('Network response was not ok for list folder');
 		}
 		return response.json();
@@ -137,7 +138,8 @@ const folderChanged = (folderUidToSelect, itemUidToSelect) => {
 	}
 	fetch("/items/list/" + selectedFolderUid).then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 
 			throw new Error('Network response was not ok for list items');
 		}
@@ -178,7 +180,8 @@ const itemChanged = (itemUidToSelect) => {
 	const selectedItemUid = document.getElementById('itemSelect').value;
 	fetch("/item/" + selectedItemUid).then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 
 			throw new Error('Network response was not ok for get item');
 		}

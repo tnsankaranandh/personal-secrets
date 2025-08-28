@@ -13,7 +13,8 @@ const createFolder = () => {
 		})
 	}).then(async response => {
 		if (!response.ok) {
-			if (await validateInvalidSessionFromAPIResponse(response)) return;
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 			throw new Error('Network response was not ok for create folder');
 		}
 		return response.json();

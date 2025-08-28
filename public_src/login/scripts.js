@@ -8,8 +8,10 @@ const login = () => {
 			username: document.getElementById('username').value,
 			password: document.getElementById('password').value
 		}),
-	}).then(response => {
+	}).then(async response => {
 		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response))
+				throw new Error("Invalid Session!");
 			throw new Error('Network response was not ok for logging in');
 		}
 		return response.json();

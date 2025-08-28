@@ -26,8 +26,8 @@ const enableActionButtonsBasedOnRole = role => {
 			document.getElementById('editUserBtn').style.visibility = 'hidden';
 			break;
 		case 'creator':
-			document.getElementById('createFolderBtn').style.visibility = 'block';
-			document.getElementById('createItemBtn').style.visibility = 'block';
+			document.getElementById('createFolderBtn').style.visibility = 'visible';
+			document.getElementById('createItemBtn').style.visibility = 'visible';
 			document.getElementById('createUserBtn').style.visibility = 'hidden';
 			document.getElementById('editFolderBtn').style.visibility = 'visible';
 			document.getElementById('editItemBtn').style.visibility = 'visible';

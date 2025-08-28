@@ -13,12 +13,33 @@ window.fetch = function(input, init = {}) {
 };
 
 const validateInvalidSessionFromAPIResponse = async (response) => {
+	const clonedResponse = response.clone();
 	try {
-		const errorJSON = await response.json();
-		if (errorJSON.isSessionInvalid) {
+		let errorData = {};
+		try {
+			errorData = await response.json();
+		} catch (e) {
+			console.error('JSON error ', e);
+			try {
+				errorData = await clonedResponse.text();
+			} catch (e) {
+				console.error('Text error ', e);
+				console.error('Unknown response data type! Unable to validate');
+				return true;
+			}
+		}
+		if (errorData?.isSessionInvalid) {
 			window.location.href = '/login?invalidSession=true';
 			return true;
 		}
+		let errorMessage = null;
+		if (typeof errorData === 'string') {
+			errorMessage = errorData;
+		} else {
+			errorMessage = errorData?.message || 'Unknown Error';
+		}
+		createBootstrapAlert(errorMessage, 'danger');
+		return true;
 	} catch (sessionValidationError) {
 		console.error("Error while validating session error: ", sessionValidationError);
 	}
@@ -42,7 +63,8 @@ const createBootstrapAlert = (message, type) => {
 	closeButton.className = `btn btn-danger`;
 	alertElement.appendChild(closeButton);
 
-	document.getElementById('alertContainer').appendChild(alertElement);
+	const alertContainer = document.getElementById('loginAlertContainer') || document.getElementById('listAlertContainer');
+	alertContainer.appendChild(alertElement);
 	
 	closeButton.addEventListener('click', () => {
 		document.getElementById('alert' + alertElementCount).remove();

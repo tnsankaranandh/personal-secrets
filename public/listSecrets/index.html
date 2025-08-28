@@ -284,6 +284,9 @@ input:disabled {
     <div class="modal" id="createItemModal" role="dialog" data-item="">
     </div>
 
+    <div id="loginAlertContainer" class="alert-container">
+    </div>
+
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -306,12 +309,33 @@ window.fetch = function(input, init = {}) {
 };
 
 const validateInvalidSessionFromAPIResponse = async (response) => {
+	const clonedResponse = response.clone();
 	try {
-		const errorJSON = await response.json();
-		if (errorJSON.isSessionInvalid) {
+		let errorData = {};
+		try {
+			errorData = await response.json();
+		} catch (e) {
+			console.error('JSON error ', e);
+			try {
+				errorData = await clonedResponse.text();
+			} catch (e) {
+				console.error('Text error ', e);
+				console.error('Unknown response data type! Unable to validate');
+				return true;
+			}
+		}
+		if (errorData?.isSessionInvalid) {
 			window.location.href = '/login?invalidSession=true';
 			return true;
 		}
+		let errorMessage = null;
+		if (typeof errorData === 'string') {
+			errorMessage = errorData;
+		} else {
+			errorMessage = errorData?.message || 'Unknown Error';
+		}
+		createBootstrapAlert(errorMessage, 'danger');
+		return true;
 	} catch (sessionValidationError) {
 		console.error("Error while validating session error: ", sessionValidationError);
 	}
@@ -335,7 +359,8 @@ const createBootstrapAlert = (message, type) => {
 	closeButton.className = `btn btn-danger`;
 	alertElement.appendChild(closeButton);
 
-	document.getElementById('alertContainer').appendChild(alertElement);
+	const alertContainer = document.getElementById('loginAlertContainer') || document.getElementById('listAlertContainer');
+	alertContainer.appendChild(alertElement);
 	
 	closeButton.addEventListener('click', () => {
 		document.getElementById('alert' + alertElementCount).remove();
@@ -373,8 +398,8 @@ const enableActionButtonsBasedOnRole = role => {
 			document.getElementById('editUserBtn').style.visibility = 'hidden';
 			break;
 		case 'creator':
-			document.getElementById('createFolderBtn').style.visibility = 'block';
-			document.getElementById('createItemBtn').style.visibility = 'block';
+			document.getElementById('createFolderBtn').style.visibility = 'visible';
+			document.getElementById('createItemBtn').style.visibility = 'visible';
 			document.getElementById('createUserBtn').style.visibility = 'hidden';
 			document.getElementById('editFolderBtn').style.visibility = 'visible';
 			document.getElementById('editItemBtn').style.visibility = 'visible';

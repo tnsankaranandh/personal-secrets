@@ -1,17 +1,34 @@
-const createFolder = () => {
+let editingFolderUid = null;
+const createOrUpdateFolder = () => {
 	const name = document.getElementById("newFolderName").value;
 	if (!name) {
 		return alert("Invalid name!");
 	}
-	fetch("/folder/create", {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			name
+	let folderUpdateAPIPromise = null;
+	if (editingFolderUid) {
+		folderUpdateAPIPromise = fetch("/folder/update", {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				name,
+				_id: editingFolderUid,
+			})
 		})
-	}).then(async response => {
+	} else {
+		folderUpdateAPIPromise = fetch("/folder/create", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				name,
+			})
+		})
+	}
+
+	folderUpdateAPIPromise?.then(async response => {
 		if (!response.ok) {
 			if (await validateInvalidSessionFromAPIResponse(response)) 
 				throw new Error('Invalid Session');
@@ -26,3 +43,41 @@ const createFolder = () => {
 		console.error('Error while creating folder:', error);
 	});
 };
+
+const updateFolderDetails = async folderUid => {
+	editingFolderUid = folderUid || null;
+	if (!editingFolderUid) {
+		document.getElementById("saveFolderModalButton").textContent = 'Create';
+		return;
+	}
+	document.getElementById("saveFolderModalButton").textContent = 'Update';
+	document.getElementById('createFolderModalContent').style.visibility = 'hidden';
+	fetch("/folder/" + editingFolderUid).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response))
+				throw new Error("Invalid Session!");
+
+			throw new Error('Network response was not ok for get folder');
+		}
+		return response.json();
+	})
+	.then(data => {
+		const { folder } = data || {};
+		document.getElementById("newFolderName").value = folder.name;
+		document.getElementById('createFolderModalContent').style.visibility = 'visible';
+	})
+	.catch(error => {
+		console.error('Error while getting folder:', error);
+		document.getElementById('closeFolderModalButton').click();
+	});
+};
+
+window.addEventListener('message', function(event) {
+    const receivedData = event.data;
+    console.log('Received message in create folder modal:', receivedData);
+    switch (receivedData?.type) {
+    	case 'createFolderModalShown':
+    		updateFolderDetails(receivedData?.folderUid);
+	        break;
+    }
+});

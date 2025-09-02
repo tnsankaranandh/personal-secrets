@@ -260,6 +260,10 @@ const itemChanged = (itemUidToSelect) => {
 const createFolderModalInstance = new bootstrap.Modal(document.getElementById('createFolderModal'), {});
 const openCreateFolderModal = (editMode) => {
 	createFolderModalInstance.show();
+	window.postMessage({
+		type: 'createFolderModalShown',
+		folderUid: editMode ? document.getElementById('folderSelect').value : null,
+	});
 };
 const createItemModalInstance = new bootstrap.Modal(document.getElementById('createItemModal'), {});
 const openCreateItemModal = () => {
@@ -267,15 +271,18 @@ const openCreateItemModal = () => {
 	window.postMessage({ type: 'createItemModalShown' });
 };
 const createUserModalInstance = new bootstrap.Modal(document.getElementById('createUserModal'), {});
-const openCreateUserModal = () => {
+const openCreateUserModal = (editMode) => {
 	createUserModalInstance.show();
+	window.postMessage({
+		type: 'createUserModalShown',
+		userUid: editMode ? sessionStorage.getItem('UserUid') : null,
+	});
 };
 
 const logOut = () => {
-	sessionStorage.removeItem('UserSession');
+	deleteUserSession();
 	window.location.href = '/login';
 };
-
 
 window.addEventListener('message', function(event) {
     const receivedData = event.data;

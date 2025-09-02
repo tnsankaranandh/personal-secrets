@@ -12,6 +12,18 @@ window.fetch = function(input, init = {}) {
 	return originalFetch(input, init);
 };
 
+const addUserSession = user => {
+	sessionStorage.setItem("UserSession", user.sessionToken);
+	sessionStorage.setItem("UserRole", user.role);
+	sessionStorage.setItem("UserUid", user._id);
+};
+
+const deleteUserSession = () => {
+	sessionStorage.removeItem('UserSession');
+	sessionStorage.removeItem('UserRole');
+	sessionStorage.removeItem('UserUid');
+};
+
 const validateInvalidSessionFromAPIResponse = async (response) => {
 	const clonedResponse = response.clone();
 	try {

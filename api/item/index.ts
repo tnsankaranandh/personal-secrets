@@ -45,8 +45,32 @@ const detail: any = async (req: any, res: any, next: any) => {
   }
 };
 
+const update: any = async (req: any, res: any, next: any) => {
+  try {
+    console.log(req.body);
+    const updatedItem = await ItemModel.findByIdAndUpdate(req.body._id, {
+      folderUid: req.body.folderUid,
+      title: req.body.title,
+      username: req.body.username,
+      password: req.body.password,
+      otherFields: req.body.otherFields,
+    }, {
+      new: true
+    });
+    console.log(updatedItem);
+    res.send(updatedItem);
+  } catch (e) {
+    console.log(
+      'Error while updating item!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
 module.exports = {
   list,
   create,
-  detail
+  detail,
+  update,
 };

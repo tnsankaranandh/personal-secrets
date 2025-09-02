@@ -17,8 +17,7 @@ const login = () => {
 		return response.json();
 	})
 	.then(data => {
-		sessionStorage.setItem("UserSession",data.user.sessionToken);
-		sessionStorage.setItem("UserRole",data.user.role);
+		addUserSession(data.user);
 		window.location.href = '/listSecrets';
 	})
 	.catch(error => {

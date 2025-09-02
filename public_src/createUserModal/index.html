@@ -1,5 +1,5 @@
 <div class="modal-dialog">
-  <div class="modal-content">
+  <div id="createUserModalContent" class="modal-content">
     <div class="modal-body">
 
       <div class="form-row">
@@ -40,8 +40,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary" onclick="createUser()">Create</button>
-      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button id="saveUserModalButton" type="button" class="btn btn-primary" onclick="createOrUpdateUser()">Create</button>
+      <button id="closeUserModalButton" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
     </div>
   </div>
   <script src="./scripts.js?__inline"></script>

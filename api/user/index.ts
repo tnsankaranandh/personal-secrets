@@ -34,7 +34,46 @@ const create: any = async (req: any, res: any, next: any) => {
   }
 };
 
+const detail: any = async (req: any, res: any, next: any) => {
+  console.log("in user api list function");
+  try {
+    const { userUid } = req.params;
+    let user = await UserModel.findById(userUid);
+    res.send({ user });
+  } catch (e) {
+    console.log(
+      'Error while getting user detail!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
+const update: any = async (req: any, res: any, next: any) => {
+  try {
+    console.log(req.body);
+    const updatedUser = await UserModel.findByIdAndUpdate(req.body._id, {
+      emailid: req.body.emailid,
+      username: req.body.username,
+      password: req.body.password,
+      role: req.body.role,
+    }, {
+      new: true
+    });
+    console.log(updatedUser);
+    res.send(updatedUser);
+  } catch (e) {
+    console.log(
+      'Error while updating user!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
 module.exports = {
   authenticate,
   create,
+  detail,
+  update,
 };

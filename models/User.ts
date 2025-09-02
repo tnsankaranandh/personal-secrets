@@ -29,6 +29,12 @@ userSchema.pre('save', async function(next: Function) {
   }
   next();
 });
+userSchema.pre('findOneAndUpdate', async function(next: Function) {
+  const user: any = this.getUpdate();
+  const salt: any = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
+  next();
+});
 
 /**
  * Helper method for generating Auth Token

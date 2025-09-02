@@ -83,10 +83,14 @@ const connectDBFilter = async (req: any, res: any, next: any) => {
 app.post('/authenticateUser', validateSessionFilter, connectDBFilter, UserAPI.authenticate);
 app.get('/folders/list', validateSessionFilter, connectDBFilter, FolderAPI.list);
 app.post('/folder/create', validateSessionFilter, connectDBFilter, FolderAPI.create);
+app.put('/folder/update', validateSessionFilter, connectDBFilter, FolderAPI.update);
+app.get('/folder/:folderUid', validateSessionFilter, connectDBFilter, FolderAPI.detail);
 app.get('/items/list/:folderUid', validateSessionFilter, connectDBFilter, ItemAPI.list);
 app.post('/item/create', validateSessionFilter, connectDBFilter, ItemAPI.create);
 app.get('/item/:itemUid', validateSessionFilter, connectDBFilter, ItemAPI.detail);
 app.post('/user/create', validateSessionFilter, connectDBFilter, UserAPI.create);
+app.get('/user/:userUid', validateSessionFilter, connectDBFilter, UserAPI.detail);
+app.put('/user/update', validateSessionFilter, connectDBFilter, UserAPI.update);
 
 
 app.all('*', (req: any, res: any) => res.redirect('/login'));

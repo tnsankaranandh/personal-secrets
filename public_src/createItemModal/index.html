@@ -1,5 +1,5 @@
 <div class="m-4">
-  <div class="modal-content">
+  <div id="createItemModalContent" class="modal-content">
     <div class="modal-body">
       <h3>Select the folder in which this item should reside:</h3>
       <div class="input-group input-group-lg">
@@ -28,8 +28,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary" onclick="createItem()">Create</button>
-      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button id="saveItemModalButton" type="button" class="btn btn-primary" onclick="createItem()">Create</button>
+      <button id="closeItemModalButton" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
     </div>
   </div>
   <script src="./scripts.js?__inline"></script>

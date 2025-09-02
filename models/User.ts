@@ -18,21 +18,24 @@ const userSchema: any = new Schema(
   { timestamps: true }
 );
 
+const getHashedPassword = async (p: any) => {
+    const salt: any = await bcrypt.genSalt(10);
+    return bcrypt.hash(p, salt);
+};
+
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', async function(next: Function) {
+userSchema.pre('save', async function(next: Function) { //create user
   const user: any = this;
   if (user.isModified('password')) {
-    const salt: any = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
+    user.password = await getHashedPassword(user.password);
   }
   next();
 });
-userSchema.pre('findOneAndUpdate', async function(next: Function) {
+userSchema.pre('findOneAndUpdate', async function(next: Function) { //update user
   const user: any = this.getUpdate();
-  const salt: any = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
+  user.password = await getHashedPassword(user.password);
   next();
 });
 

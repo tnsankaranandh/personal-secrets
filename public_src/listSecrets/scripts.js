@@ -266,9 +266,12 @@ const openCreateFolderModal = (editMode) => {
 	});
 };
 const createItemModalInstance = new bootstrap.Modal(document.getElementById('createItemModal'), {});
-const openCreateItemModal = () => {
+const openCreateItemModal = (editMode) => {
 	createItemModalInstance.show();
-	window.postMessage({ type: 'createItemModalShown' });
+	window.postMessage({
+		type: 'createItemModalShown',
+		itemUid: editMode ? document.getElementById('itemSelect').value : null,
+	});
 };
 const createUserModalInstance = new bootstrap.Modal(document.getElementById('createUserModal'), {});
 const openCreateUserModal = (editMode) => {

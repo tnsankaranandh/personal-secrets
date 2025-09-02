@@ -87,6 +87,7 @@ app.put('/folder/update', validateSessionFilter, connectDBFilter, FolderAPI.upda
 app.get('/folder/:folderUid', validateSessionFilter, connectDBFilter, FolderAPI.detail);
 app.get('/items/list/:folderUid', validateSessionFilter, connectDBFilter, ItemAPI.list);
 app.post('/item/create', validateSessionFilter, connectDBFilter, ItemAPI.create);
+app.put('/item/update', validateSessionFilter, connectDBFilter, ItemAPI.update);
 app.get('/item/:itemUid', validateSessionFilter, connectDBFilter, ItemAPI.detail);
 app.post('/user/create', validateSessionFilter, connectDBFilter, UserAPI.create);
 app.get('/user/:userUid', validateSessionFilter, connectDBFilter, UserAPI.detail);

@@ -1,3 +1,4 @@
+let editingItemUid = null;
 const createItem = () => {
 	const folderUid = document.getElementById("newItemFolderUid").value;
 	const title = document.getElementById("newItemTitle").value;
@@ -6,19 +7,38 @@ const createItem = () => {
 	if (!title) {
 		return alert("Invalid title!");
 	}
-	fetch("/item/create", {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({
-			folderUid,
-			title,
-			username,
-			password,
-			otherFields: generateOtherFields(),
-		})
-	}).then(async response => {
+	let itemUpdateAPIPromise = null;
+	if (editingItemUid) {
+		itemUpdateAPIPromise = fetch("/item/update", {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				folderUid,
+				title,
+				username,
+				password,
+				otherFields: generateOtherFields(),
+				_id: editingItemUid,
+			})
+		});
+	} else {
+		itemUpdateAPIPromise = fetch("/item/create", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				folderUid,
+				title,
+				username,
+				password,
+				otherFields: generateOtherFields(),
+			})
+		});
+	}
+	itemUpdateAPIPromise?.then(async response => {
 		if (!response.ok) {
 			if (await validateInvalidSessionFromAPIResponse(response)) 
 				throw new Error('Invalid Session');
@@ -47,7 +67,8 @@ const generateOtherFields = () => {
 	return otherFieldsObject;
 };
 
-const updateFolderListForCreateItemModal = () => {
+const updateFolderListForCreateItemModal = (itemUid = null) => {
+	document.getElementById("createItemModalContent").style.visibility = 'hidden';
 	fetch("/folders/list").then(async response => {
 		if (!response.ok) {
 			if (await validateInvalidSessionFromAPIResponse(response)) 
@@ -68,15 +89,53 @@ const updateFolderListForCreateItemModal = () => {
     		const newOption = new Option(f.name, f._id);
 		    createItemModalFolderSelectElement.add(newOption);
 		});
+
+
+		editingItemUid = itemUid || null;
+		if (!editingItemUid) {
+			document.getElementById("saveItemModalButton").textContent = 'Create';
+			return;
+		}
+		document.getElementById("saveItemModalButton").textContent = 'Update';
+		fetch("/item/" + editingItemUid).then(async response => {
+			if (!response.ok) {
+				if (await validateInvalidSessionFromAPIResponse(response))
+					throw new Error("Invalid Session!");
+
+				throw new Error('Network response was not ok for get item');
+			}
+			return response.json();
+		})
+		.then(data => {
+			const { item } = data || {};
+
+			document.getElementById("newItemFolderUid").value = item.folderUid;
+			document.getElementById("newItemTitle").value = item.title;
+			document.getElementById("newItemUsername").value = item.username;
+			document.getElementById("newItemPassword").value = item.password;
+			document.getElementById("additionalItemFields").innerHTML = '';
+			randomIndexForAdditionalItemFields = 0;
+			const otherFieldKeys = Object.keys(item.otherFields || {});
+			otherFieldKeys.forEach(k => {
+				addItemField(k, item.otherFields[k]);
+			});
+
+			document.getElementById('createItemModalContent').style.visibility = 'visible';
+		})
+		.catch(error => {
+			console.error('Error while getting item:', error);
+			document.getElementById('closeItemModalButton').click();
+		});
 	})
 	.catch(error => {
 		console.error('Error while listing folders in create item modal:', error);
 		alert("Error while listing folders in create item modal: ", error);
+		document.getElementById("createItemModalContent").style.visibility = 'visible';
 	});
 };
 
 let randomIndexForAdditionalItemFields = 0;
-const addItemField = () => {
+const addItemField = (key, value) => {
 	randomIndexForAdditionalItemFields++;
 	const tempRandomIndexForAdditionalItemFields = randomIndexForAdditionalItemFields;
 	let fieldHtml = '<div>\
@@ -84,9 +143,9 @@ const addItemField = () => {
 		<div class="input-group input-group-lg">\
 			<span class="input-group-text p-0 pr-2 pl-2" id="inputGroup-sizing-lg">\
 				<button id="additionalField' + tempRandomIndexForAdditionalItemFields + 'remover" class="btn btn-danger mr-1"><i class="bi bi-trash"></i></button>\
-				<input type="text" class="form-control" id="newItemFieldKey' + tempRandomIndexForAdditionalItemFields + '" placeholder="Key">\
+				<input type="text" class="form-control" id="newItemFieldKey' + tempRandomIndexForAdditionalItemFields + '" placeholder="Key" ' + (key ? "value=\"" + key + "\"" : "")+ '>\
 			</span>\
-			<input type="text" class="form-control" id="newItemFieldValue' + tempRandomIndexForAdditionalItemFields + '" placeholder="Value">\
+			<input type="text" class="form-control" id="newItemFieldValue' + tempRandomIndexForAdditionalItemFields + '" placeholder="Value" ' + (value ? "value=\"" + value + "\"" : "") + '>\
 		</div>\
 	</div>';
 	const additionalItemFieldsElement = document.getElementById('additionalItemFields');
@@ -109,7 +168,7 @@ window.addEventListener('message', function(event) {
     console.log('Received message in create item modal:', receivedData);
     switch (receivedData?.type) {
     	case 'createItemModalShown':
-    		updateFolderListForCreateItemModal();
+    		updateFolderListForCreateItemModal(receivedData.itemUid);
 	        break;
     }
 });

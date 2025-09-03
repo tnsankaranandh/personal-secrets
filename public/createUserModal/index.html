@@ -100,6 +100,10 @@ const createOrUpdateUser = () => {
 const updateUserDetails = async userUid => {
 	editingUserUid = userUid || null;
 	if (!editingUserUid) {
+		document.getElementById("newUserEmailID").value = '';
+		document.getElementById("newUserRole").value = 'viewer';
+		document.getElementById("newUserUserName").value = '';
+		document.getElementById("newUserPassword").value = '';
 		document.getElementById("saveUserModalButton").textContent = 'Create';
 		return;
 	}

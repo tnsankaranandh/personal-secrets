@@ -271,6 +271,7 @@ const openCreateItemModal = (editMode) => {
 	window.postMessage({
 		type: 'createItemModalShown',
 		itemUid: editMode ? document.getElementById('itemSelect').value : null,
+		folderUid: document.getElementById('folderSelect').value,
 	});
 };
 const createUserModalInstance = new bootstrap.Modal(document.getElementById('createUserModal'), {});

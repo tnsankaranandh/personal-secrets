@@ -102,7 +102,7 @@ const generateOtherFields = () => {
 	return otherFieldsObject;
 };
 
-const updateFolderListForCreateItemModal = (itemUid = null) => {
+const updateFolderListForCreateItemModal = (itemUid = null, currentFolderUid = null) => {
 	document.getElementById("createItemModalContent").style.visibility = 'hidden';
 	fetch("/folders/list").then(async response => {
 		if (!response.ok) {
@@ -129,6 +129,12 @@ const updateFolderListForCreateItemModal = (itemUid = null) => {
 		editingItemUid = itemUid || null;
 		if (!editingItemUid) {
 			document.getElementById("saveItemModalButton").textContent = 'Create';
+			document.getElementById('createItemModalContent').style.visibility = 'visible';
+			document.getElementById("newItemFolderUid").value = currentFolderUid;
+			document.getElementById("newItemTitle").value = '';
+			document.getElementById("newItemUsername").value = '';
+			document.getElementById("newItemPassword").value = '';
+			document.getElementById("additionalItemFields").innerHTML = '';
 			return;
 		}
 		document.getElementById("saveItemModalButton").textContent = 'Update';
@@ -203,7 +209,7 @@ window.addEventListener('message', function(event) {
     console.log('Received message in create item modal:', receivedData);
     switch (receivedData?.type) {
     	case 'createItemModalShown':
-    		updateFolderListForCreateItemModal(receivedData.itemUid);
+    		updateFolderListForCreateItemModal(receivedData.itemUid, receivedData.folderUid);
 	        break;
     }
 });

@@ -47,6 +47,7 @@ const createOrUpdateFolder = () => {
 const updateFolderDetails = async folderUid => {
 	editingFolderUid = folderUid || null;
 	if (!editingFolderUid) {
+		document.getElementById("newFolderName").value = '';
 		document.getElementById("saveFolderModalButton").textContent = 'Create';
 		return;
 	}

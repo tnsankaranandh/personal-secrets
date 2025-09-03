@@ -35,6 +35,8 @@ const detail: any = async (req: any, res: any, next: any) => {
   try {
     const { itemUid } = req.params;
     let item = await ItemModel.findById(itemUid);
+    item = item.toObject();
+    item.password = "----------";
     res.send({ item });
   } catch (e) {
     console.log(

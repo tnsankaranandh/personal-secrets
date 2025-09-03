@@ -234,20 +234,28 @@ const itemChanged = (itemUidToSelect) => {
 		document.getElementById('itemDetailPassword').value = item.password;
 		const otherFieldKeys = Object.keys(item.otherFields || {});
 		document.getElementById('itemDetailOtherFields').innerHTML = '';
-		otherFieldKeys.forEach(ofK => {
+		otherFieldKeys.forEach((ofK, index) => {
 			let fieldHtml = '<div>\
 				\
 				<div class="input-group input-group-lg">\
-					<span class="input-group-text p-0 pr-2 pl-2" id="inputGroup-sizing-lg">\
+					<span class="input-group-text p-0 pr-2 pl-2">\
 						<input type="text" disabled class="form-control" placeholder="Key" value="' + ofK + '">\
+                        <button id="keyCopyBtn' + index + '" class="btn btn-success" onclick="copyText("' + ofK + '")"><i class="bi bi-copy"></i></button>\
 					</span>\
 					<input type="text" disabled class="form-control" placeholder="Value" value="' + item.otherFields[ofK] + '">\
+                    <button id="valueCopyBtn' + index + '" class="btn btn-success"><i class="bi bi-copy"></i></button>\
 				</div>\
 			</div>';
 			const otherFieldsElement = document.getElementById('itemDetailOtherFields');
 			const newFieldElement = document.createElement('div');
 			newFieldElement.innerHTML = fieldHtml;
 			otherFieldsElement.appendChild(newFieldElement);
+			document.getElementById('keyCopyBtn' + index).addEventListener('click', () => {
+				copyText(ofK);
+			});
+			document.getElementById('valueCopyBtn' + index).addEventListener('click', () => {
+				copyText(item.otherFields[ofK]);
+			});
 		});
 		hideLoader();
 	})
@@ -304,3 +312,26 @@ window.addEventListener('message', function(event) {
 	        break;
     }
 });
+
+
+const copyItemTitle = () => {
+	copyText(document.getElementById('itemDetailTitle').value);
+};
+
+const copyItemUserName = () => {
+	copyText(document.getElementById('itemDetailUsername').value);
+};
+
+const copyItemPassword = () => {
+	copyText(document.getElementById('itemDetailPassword').value);
+};
+
+const copyText = text => {
+	navigator.clipboard.writeText(text)
+    .then(() => {
+      console.log('Text successfully copied to clipboard!');
+    })
+    .catch(err => {
+      console.error('Failed to copy text: ', err);
+    });
+};

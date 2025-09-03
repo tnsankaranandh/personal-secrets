@@ -107,10 +107,10 @@ app.listen(8000, () => { console.log('Server ready on port 8000.')} );
 module.exports = app;
 
 
-import * as bcrypt from 'bcryptjs';
+/*import * as bcrypt from 'bcryptjs';
 async function logs() {
 	console.log('viewer - ', await bcrypt.hash('viewer', await bcrypt.genSalt(10)));
 	console.log('creator - ', await bcrypt.hash('creator', await bcrypt.genSalt(10)));
 	console.log('admin - ', await bcrypt.hash('admin', await bcrypt.genSalt(10)));
 };
-logs();
+logs();*/

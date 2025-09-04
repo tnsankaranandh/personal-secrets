@@ -19,12 +19,12 @@ const itemSchema: any = Schema(
  */
 itemSchema.pre('save', async function(next: Function) { //create item
   const item: any = this;
-  item.password = await utils.getHashedPassword(item.password);
+  item.password = await utils.encryptText(item.password);
   next();
 });
 itemSchema.pre('findOneAndUpdate', async function(next: Function) { //update item
   const item: any = this.getUpdate();
-  item.password = await utils.getHashedPassword(item.password);
+  item.password = await utils.encryptText(item.password);
   next();
 });
 

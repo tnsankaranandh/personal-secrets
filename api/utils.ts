@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const chalk = require("chalk");
 const bcrypt = require('bcryptjs');
+const CryptoJS = require('crypto-js');
+
 
 const connectDB: Function = async () => {
   try {
@@ -16,12 +18,22 @@ const connectDB: Function = async () => {
   }
 };
 
-const getHashedPassword = async (p: any) => {
+const getHashedPassword: Function = async (p: any) => {
     const salt: any = await bcrypt.genSalt(10);
     return bcrypt.hash(p, salt);
+};
+
+const encryptText: Function = async (text: any) => {
+  return CryptoJS.AES.encrypt(text, process.env.ENCRYPTION_KEY);
+};
+
+const decryptText: Function = async (text: any) => {
+  return CryptoJS.AES.decrypt(text, process.env.ENCRYPTION_KEY);
 };
 
 module.exports = {
   connectDB,
   getHashedPassword,
+  encryptText,
+  decryptText,
 };

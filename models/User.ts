@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import * as utils from '../api/utils';
+const utils = require('../api/utils');
 
 const { Schema } = mongoose;
 
@@ -25,6 +25,7 @@ const userSchema: any = new Schema(
 userSchema.pre('save', async function(next: Function) { //create user
   const user: any = this;
   if (user.isModified('password')) {
+    console.log(utils);
     user.password = await utils.getHashedPassword(user.password);
   }
   next();

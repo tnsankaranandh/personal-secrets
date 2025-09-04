@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+import * as utils from '../api/utils';
 
 const { Schema } = mongoose;
 
@@ -18,24 +19,19 @@ const userSchema: any = new Schema(
   { timestamps: true }
 );
 
-const getHashedPassword = async (p: any) => {
-    const salt: any = await bcrypt.genSalt(10);
-    return bcrypt.hash(p, salt);
-};
-
 /**
  * Password hash middleware.
  */
 userSchema.pre('save', async function(next: Function) { //create user
   const user: any = this;
   if (user.isModified('password')) {
-    user.password = await getHashedPassword(user.password);
+    user.password = await utils.getHashedPassword(user.password);
   }
   next();
 });
 userSchema.pre('findOneAndUpdate', async function(next: Function) { //update user
   const user: any = this.getUpdate();
-  user.password = await getHashedPassword(user.password);
+  user.password = await utils.getHashedPassword(user.password);
   next();
 });
 

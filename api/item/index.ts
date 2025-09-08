@@ -52,17 +52,19 @@ const detail: any = async (req: any, res: any, next: any) => {
 
 const update: any = async (req: any, res: any, next: any) => {
   try {
-    console.log(req.body);
-    const updatedItem = await ItemModel.findByIdAndUpdate(req.body._id, {
-      folderUid: req.body.folderUid,
-      title: req.body.title,
-      username: req.body.username,
-      password: req.body.password,
-      otherFields: req.body.otherFields,
-    }, {
+    let previousItem = await ItemModel.findById(req.body._id);
+    previousItem = previousItem.toObject();
+    previousItem.folderUid = req.body.folderUid;
+    previousItem.title = req.body.title;
+    previousItem.username = req.body.username;
+    if (req.body.password) previousItem.password = req.body.password;
+    for (let ofK in req.body.otherFields) {
+      previousItem.otherFields[ofK] = req.body.otherFields[ofK];
+    }
+    previousItem.sensitiveKeys = req.body.sensitiveKeys;
+    const updatedItem = await ItemModel.findByIdAndUpdate(req.body._id, previousItem, {
       new: true
     });
-    console.log(updatedItem);
     res.send(updatedItem);
   } catch (e) {
     console.log(

@@ -58,8 +58,10 @@ const updateUserDetails = async userUid => {
 		document.getElementById("newUserUserName").value = '';
 		document.getElementById("newUserPassword").value = '';
 		document.getElementById("saveUserModalButton").textContent = 'Create';
+		document.getElementById("newUserPassword").setAttribute('placeholder', '');
 		return;
 	}
+	document.getElementById("newUserPassword").setAttribute('placeholder', '******');
 	document.getElementById("saveUserModalButton").textContent = 'Update';
 	document.getElementById('createUserModalContent').style.visibility = 'hidden';
 	fetch("/user/" + editingUserUid).then(async response => {

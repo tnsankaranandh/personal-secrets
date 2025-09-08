@@ -19,20 +19,23 @@ const userSchema: any = new Schema(
   { timestamps: true }
 );
 
+const encryptSensitiveFieldsOfUser = async (user: any) => {
+  if (user.password) {
+    user.password = await utils.getHashedPassword(user.password);
+  }
+};
+
 /**
  * Password hash middleware.
  */
 userSchema.pre('save', async function(next: Function) { //create user
   const user: any = this;
-  if (user.isModified('password')) {
-    console.log(utils);
-    user.password = await utils.getHashedPassword(user.password);
-  }
+  await encryptSensitiveFieldsOfUser(user);
   next();
 });
 userSchema.pre('findOneAndUpdate', async function(next: Function) { //update user
   const user: any = this.getUpdate();
-  user.password = await utils.getHashedPassword(user.password);
+  await encryptSensitiveFieldsOfUser(user);
   next();
 });
 

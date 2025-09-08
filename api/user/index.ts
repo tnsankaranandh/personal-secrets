@@ -35,7 +35,6 @@ const create: any = async (req: any, res: any, next: any) => {
 };
 
 const detail: any = async (req: any, res: any, next: any) => {
-  console.log("in user api list function");
   try {
     const { userUid } = req.params;
     let user = await UserModel.findById(userUid);
@@ -51,13 +50,13 @@ const detail: any = async (req: any, res: any, next: any) => {
 
 const update: any = async (req: any, res: any, next: any) => {
   try {
-    console.log(req.body);
-    const updatedUser = await UserModel.findByIdAndUpdate(req.body._id, {
-      emailid: req.body.emailid,
-      username: req.body.username,
-      password: req.body.password,
-      role: req.body.role,
-    }, {
+    let previousUser = await UserModel.findById(req.body._id);
+    previousUser = previousUser.toObject();
+    previousUser.emailid = req.body.emailid;
+    previousUser.username = req.body.username;
+    if (req.body.password) previousUser.password = req.body.password;
+    previousUser.role = req.body.role;
+    const updatedUser = await UserModel.findByIdAndUpdate(req.body._id, previousUser, {
       new: true
     });
     console.log(updatedUser);

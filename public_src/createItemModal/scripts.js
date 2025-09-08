@@ -1,4 +1,5 @@
 let editingItemUid = null;
+let sensitiveFieldPlaceholder = 'Value';
 const createItem = () => {
 	const folderUid = document.getElementById("newItemFolderUid").value;
 	const title = document.getElementById("newItemTitle").value;
@@ -12,20 +13,23 @@ const createItem = () => {
 	console.log(otherFields, sensitiveKeys);
 	let itemUpdateAPIPromise = null;
 	if (editingItemUid) {
+		const updatedObject = {
+			folderUid,
+			title,
+			username,
+			otherFields,
+			sensitiveKeys,
+			_id: editingItemUid,
+		};
+		if (password) {
+			updatedObject.password = password;
+		}
 		itemUpdateAPIPromise = fetch("/item/update", {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({
-				folderUid,
-				title,
-				username,
-				password,
-				otherFields,
-				sensitiveKeys,
-				_id: editingItemUid,
-			})
+			body: JSON.stringify(updatedObject)
 		});
 	} else {
 		itemUpdateAPIPromise = fetch("/item/create", {
@@ -70,6 +74,9 @@ const generateOtherFields = () => {
 	const sensitiveKeys = [];
 	allOtherFieldsKeyElements.forEach((_, index) => {
 		otherFields[allOtherFieldsKeyElements[index].value] = allOtherFieldsValueElements[index].value;
+		if (!allOtherFieldsValueElements[index].value) {
+			delete otherFields[allOtherFieldsKeyElements[index].value];
+		}
 		if (allOtherFieldsSensitiveElements[index].checked) {
 			sensitiveKeys.push(allOtherFieldsKeyElements[index].value);
 		}
@@ -110,8 +117,12 @@ const updateFolderListForCreateItemModal = (itemUid = null, currentFolderUid = n
 			document.getElementById("newItemUsername").value = '';
 			document.getElementById("newItemPassword").value = '';
 			document.getElementById("additionalItemFields").innerHTML = '';
+			document.getElementById("newItemPassword").setAttribute('placeholder', 'Password');
+			sensitiveFieldPlaceholder = 'Value';
 			return;
 		}
+		document.getElementById("newItemPassword").setAttribute('placeholder', '******');
+		sensitiveFieldPlaceholder = '******';
 		document.getElementById("saveItemModalButton").textContent = 'Update';
 		fetch("/item/" + editingItemUid).then(async response => {
 			if (!response.ok) {
@@ -133,7 +144,7 @@ const updateFolderListForCreateItemModal = (itemUid = null, currentFolderUid = n
 			randomIndexForAdditionalItemFields = 0;
 			const otherFieldKeys = Object.keys(item.otherFields || {});
 			otherFieldKeys.forEach(k => {
-				addItemField(k, item.otherFields[k]);
+				addItemField(k, item.otherFields[k], item.sensitiveKeys);
 			});
 
 			document.getElementById('createItemModalContent').style.visibility = 'visible';
@@ -161,7 +172,7 @@ const addItemField = (key, value, sensitiveKeys) => {
 				<button id="additionalField' + tempRandomIndexForAdditionalItemFields + 'remover" class="btn btn-danger mr-1"><i class="bi bi-trash"></i></button>\
 				<input type="text" class="form-control" id="newItemFieldKey' + tempRandomIndexForAdditionalItemFields + '" placeholder="Key" ' + (key ? "value=\"" + key + "\"" : "")+ '>\
 			</span>\
-			<input type="text" class="form-control" id="newItemFieldValue' + tempRandomIndexForAdditionalItemFields + '" placeholder="Value" ' + (value ? "value=\"" + value + "\"" : "") + '>\
+			<input type="text" class="form-control" id="newItemFieldValue' + tempRandomIndexForAdditionalItemFields + '" placeholder="' + (key ? sensitiveFieldPlaceholder : 'Value') + '" ' + (value ? "value=\"" + value + "\"" : "") + '>\
 			<span class="input-group-text p-0 pr-2 pl-2" id="inputGroup-sizing-lg">\
 				<input type="checkbox" id="newItemFieldIsSensitive' + tempRandomIndexForAdditionalItemFields + '">\
 				<label for="newItemFieldIsSensitive' + tempRandomIndexForAdditionalItemFields + '" class="mb-0">Sensitive</label>\
@@ -177,6 +188,7 @@ const addItemField = (key, value, sensitiveKeys) => {
 	document.getElementById('additionalField' + tempRandomIndexForAdditionalItemFields + 'remover').addEventListener('click', () => {
 		removeAdditionalField(tempRandomIndexForAdditionalItemFields);
 	});
+	document.getElementById('newItemFieldIsSensitive' + tempRandomIndexForAdditionalItemFields).checked = sensitiveKeys.indexOf(key) > -1;
 };
 
 const removeAdditionalField = index => {

@@ -357,3 +357,17 @@ const showSensitiveFieldValue = (elementId, value) => {
 		document.getElementById(elementId).value = '';
 	}, 3000);
 };
+
+const deleteSelectedFolder = () => {
+	if(confirm("Are you sure to delete the folder? All the items inside this folder will be deleted!")) {
+		alert("Need to delete folder now");
+		updateFolderList();
+	}
+};
+
+const deleteSelectedItem = () => {
+	if(confirm("Are you sure to delete the item?")) {
+		alert("Need to delete item now");
+		folderChanged(document.getElementById('folderSelect').value);
+	}
+};

@@ -360,8 +360,26 @@ const showSensitiveFieldValue = (elementId, value) => {
 
 const deleteSelectedFolder = () => {
 	if(confirm("Are you sure to delete the folder? All the items inside this folder will be deleted!")) {
-		alert("Need to delete folder now");
-		updateFolderList();
+		showLoader();
+		fetch("/folder/delete/" + document.getElementById('folderSelect').value, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}).then(async response => {
+			if (!response.ok) {
+				if (await validateInvalidSessionFromAPIResponse(response)) 
+					throw new Error('Invalid Session');
+
+				throw new Error('Network response was not ok for delete folder');
+			}
+			return response.json();
+		})
+		.then(updateFolderList)
+		.catch(error => {
+			console.error('Error while deleting folder:', error);
+			hideLoader();
+		});
 	}
 };
 

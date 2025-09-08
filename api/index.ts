@@ -85,11 +85,12 @@ app.get('/folders/list', validateSessionFilter, connectDBFilter, FolderAPI.list)
 app.post('/folder/create', validateSessionFilter, connectDBFilter, FolderAPI.create);
 app.put('/folder/update', validateSessionFilter, connectDBFilter, FolderAPI.update);
 app.get('/folder/:folderUid', validateSessionFilter, connectDBFilter, FolderAPI.detail);
-app.delete('/folder/delete/:folderUid', validateSessionFilter, connectDBFilter, FolderAPI.delete);
+app.delete('/folder/delete/:folderUid', validateSessionFilter, connectDBFilter, FolderAPI.deleteFolder);
 app.get('/items/list/:folderUid', validateSessionFilter, connectDBFilter, ItemAPI.list);
 app.post('/item/create', validateSessionFilter, connectDBFilter, ItemAPI.create);
 app.put('/item/update', validateSessionFilter, connectDBFilter, ItemAPI.update);
 app.get('/item/:itemUid', validateSessionFilter, connectDBFilter, ItemAPI.detail);
+app.delete('/item/delete/:itemUid', validateSessionFilter, connectDBFilter, ItemAPI.deleteItem);
 app.post('/user/create', validateSessionFilter, connectDBFilter, UserAPI.create);
 app.get('/user/:userUid', validateSessionFilter, connectDBFilter, UserAPI.detail);
 app.put('/user/update', validateSessionFilter, connectDBFilter, UserAPI.update);

@@ -375,7 +375,7 @@ const deleteSelectedFolder = () => {
 			}
 			return response.json();
 		})
-		.then(updateFolderList)
+		.then(() => { updateFolderList(); })
 		.catch(error => {
 			console.error('Error while deleting folder:', error);
 			hideLoader();
@@ -385,7 +385,27 @@ const deleteSelectedFolder = () => {
 
 const deleteSelectedItem = () => {
 	if(confirm("Are you sure to delete the item?")) {
-		alert("Need to delete item now");
-		folderChanged(document.getElementById('folderSelect').value);
+		showLoader();
+		fetch("/item/delete/" + document.getElementById('itemSelect').value, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}).then(async response => {
+			if (!response.ok) {
+				if (await validateInvalidSessionFromAPIResponse(response)) 
+					throw new Error('Invalid Session');
+
+				throw new Error('Network response was not ok for delete item');
+			}
+			return response.json();
+		})
+		.then(() => {
+			folderChanged(document.getElementById('folderSelect').value);
+		})
+		.catch(error => {
+			console.error('Error while deleting item:', error);
+			hideLoader();
+		});
 	}
 };

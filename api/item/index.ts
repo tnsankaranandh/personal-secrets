@@ -75,9 +75,24 @@ const update: any = async (req: any, res: any, next: any) => {
   }
 };
 
+const deleteItem: any = async (req: any, res: any, next: any) => {
+  try {
+    const { itemUid } = req.params;
+    await ItemModel.findByIdAndDelete(itemUid);
+    res.send({});
+  } catch (e) {
+    console.log(
+      'Error while deleting item!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
 module.exports = {
   list,
   create,
   detail,
   update,
+  deleteItem,
 };

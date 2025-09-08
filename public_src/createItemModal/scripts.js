@@ -7,6 +7,9 @@ const createItem = () => {
 	if (!title) {
 		return alert("Invalid title!");
 	}
+	const { otherFields, sensitiveKeys } = generateOtherFields();
+	console.log('otherFields, sensitiveKeys');
+	console.log(otherFields, sensitiveKeys);
 	let itemUpdateAPIPromise = null;
 	if (editingItemUid) {
 		itemUpdateAPIPromise = fetch("/item/update", {
@@ -19,7 +22,8 @@ const createItem = () => {
 				title,
 				username,
 				password,
-				otherFields: generateOtherFields(),
+				otherFields,
+				sensitiveKeys,
 				_id: editingItemUid,
 			})
 		});
@@ -34,7 +38,8 @@ const createItem = () => {
 				title,
 				username,
 				password,
-				otherFields: generateOtherFields(),
+				otherFields,
+				sensitiveKeys,
 			})
 		});
 	}
@@ -60,11 +65,16 @@ const createItem = () => {
 const generateOtherFields = () => {
 	const allOtherFieldsKeyElements = document.querySelectorAll('[id^="newItemFieldKey"]');
 	const allOtherFieldsValueElements = document.querySelectorAll('[id^="newItemFieldValue"]');
-	const otherFieldsObject = {};
+	const allOtherFieldsSensitiveElements = document.querySelectorAll('[id^="newItemFieldIsSensitive"]');
+	const otherFields = {};
+	const sensitiveKeys = [];
 	allOtherFieldsKeyElements.forEach((_, index) => {
-		otherFieldsObject[allOtherFieldsKeyElements[index].value] = allOtherFieldsValueElements[index].value;
+		otherFields[allOtherFieldsKeyElements[index].value] = allOtherFieldsValueElements[index].value;
+		if (allOtherFieldsSensitiveElements[index].checked) {
+			sensitiveKeys.push(allOtherFieldsKeyElements[index].value);
+		}
 	});
-	return otherFieldsObject;
+	return { otherFields, sensitiveKeys };
 };
 
 const updateFolderListForCreateItemModal = (itemUid = null, currentFolderUid = null) => {
@@ -141,7 +151,7 @@ const updateFolderListForCreateItemModal = (itemUid = null, currentFolderUid = n
 };
 
 let randomIndexForAdditionalItemFields = 0;
-const addItemField = (key, value) => {
+const addItemField = (key, value, sensitiveKeys) => {
 	randomIndexForAdditionalItemFields++;
 	const tempRandomIndexForAdditionalItemFields = randomIndexForAdditionalItemFields;
 	let fieldHtml = '<div>\
@@ -152,6 +162,10 @@ const addItemField = (key, value) => {
 				<input type="text" class="form-control" id="newItemFieldKey' + tempRandomIndexForAdditionalItemFields + '" placeholder="Key" ' + (key ? "value=\"" + key + "\"" : "")+ '>\
 			</span>\
 			<input type="text" class="form-control" id="newItemFieldValue' + tempRandomIndexForAdditionalItemFields + '" placeholder="Value" ' + (value ? "value=\"" + value + "\"" : "") + '>\
+			<span class="input-group-text p-0 pr-2 pl-2" id="inputGroup-sizing-lg">\
+				<input type="checkbox" id="newItemFieldIsSensitive' + tempRandomIndexForAdditionalItemFields + '">\
+				<label for="newItemFieldIsSensitive' + tempRandomIndexForAdditionalItemFields + '" class="mb-0">Sensitive</label>\
+			</span>\
 		</div>\
 	</div>';
 	const additionalItemFieldsElement = document.getElementById('additionalItemFields');

@@ -10,6 +10,7 @@ const itemSchema: any = Schema(
     username: String,
     password: String,
     otherFields: Object,
+    sensitiveKeys: [String],
   },
   { timestamps: true }
 );

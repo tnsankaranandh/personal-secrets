@@ -17,8 +17,6 @@ const list: any = async (req: any, res: any, next: any) => {
 
 const create: any = async (req: any, res: any, next: any) => {
   try {
-    console.log('in create item');
-    console.log(req.body);
     const newItemObject = new ItemModel(req.body);
     await newItemObject.save();
     res.send(newItemObject);
@@ -36,7 +34,12 @@ const detail: any = async (req: any, res: any, next: any) => {
     const { itemUid } = req.params;
     let item = await ItemModel.findById(itemUid);
     item = item.toObject();
-    item.password = "----------";
+    console.log('item before removing sensitive fields ', item);
+    item.password = '';
+    (item.sensitiveKeys || []).forEach((sk: any) => {
+      (item.otherFields || {})[sk] = '';
+    });
+    console.log('item after removing sensitive fields ', item);
     res.send({ item });
   } catch (e) {
     console.log(

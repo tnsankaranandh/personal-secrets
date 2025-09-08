@@ -197,6 +197,10 @@ input:disabled {
   top: 0;
   right: 0;
 }
+
+.item-detail-contents input::placeholder {
+  color: black  ;
+}
 </style>
   </head>
   <body>
@@ -236,7 +240,7 @@ input:disabled {
                 <button type="button" class="btn btn-info mb-3 mt-2" onClick="logOut()"><i class="bi bi-box-arrow-right"></i></button>
               </div>
             </div>
-            <div class="row justify-content-left p-3">
+            <div class="row justify-content-left p-3 item-detail-contents">
                 <div class="container-fluid">
                   <div class="row h-100 align-items-center">
                     <div class="col">
@@ -257,7 +261,8 @@ input:disabled {
                       <div class="row justify-content-between">
                         <div class="input-group input-group-lg">
                           <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                          <input type="password" disabled class="form-control" id="itemDetailPassword">
+                          <input type="text" disabled placeholder="******" class="form-control" id="itemDetailPassword">
+                          <button class="btn btn-primary" onclick="showPassword()"><i class="bi bi-eye-slash"></i></button>
                           <button class="btn btn-success" onclick="copyItemPassword()"><i class="bi bi-copy"></i></button>
                         </div>
                       </div>
@@ -622,15 +627,19 @@ const itemChanged = (itemUidToSelect) => {
 		const otherFieldKeys = Object.keys(item.otherFields || {});
 		document.getElementById('itemDetailOtherFields').innerHTML = '';
 		otherFieldKeys.forEach((ofK, index) => {
+			let sensitiveEyeButtonHtml = '';
+			if (item.sensitiveKeys?.indexOf(ofK) > -1 )
+				sensitiveEyeButtonHtml = '<button id="sensitiveValueShowBtn' + index + '" class="btn btn-primary"><i class="bi bi-eye-slash"></i></button>';
 			let fieldHtml = '<div>\
 				\
 				<div class="input-group input-group-lg">\
 					<span class="input-group-text p-0 pr-2 pl-2">\
-						<input type="text" disabled class="form-control" placeholder="Key" value="' + ofK + '">\
-                        <button id="keyCopyBtn' + index + '" class="btn btn-success" onclick="copyText("' + ofK + '")"><i class="bi bi-copy"></i></button>\
+						<input type="text" disabled class="form-control" value="' + ofK + '" placeholder="******">\
+            <button id="keyCopyBtn' + index + '" class="btn btn-success" onclick="copyText("' + ofK + '")"><i class="bi bi-copy"></i></button>\
 					</span>\
-					<input type="text" disabled class="form-control" placeholder="Value" value="' + item.otherFields[ofK] + '">\
-                    <button id="valueCopyBtn' + index + '" class="btn btn-success"><i class="bi bi-copy"></i></button>\
+					<input id="sensitiveValueField' + index + '" type="text" disabled class="form-control" value="' + item.otherFields[ofK] + '" placeholder="******">\
+          ' + sensitiveEyeButtonHtml + '\
+          <button id="valueCopyBtn' + index + '" class="btn btn-success"><i class="bi bi-copy"></i></button>\
 				</div>\
 			</div>';
 			const otherFieldsElement = document.getElementById('itemDetailOtherFields');
@@ -642,6 +651,9 @@ const itemChanged = (itemUidToSelect) => {
 			});
 			document.getElementById('valueCopyBtn' + index).addEventListener('click', () => {
 				copyText(item.otherFields[ofK]);
+			});
+			document.getElementById('sensitiveValueShowBtn' + index)?.addEventListener('click', () => {
+				showSensitiveOtherField('sensitiveValueField' + index, ofK);
 			});
 		});
 		hideLoader();
@@ -721,6 +733,21 @@ const copyText = text => {
     .catch(err => {
       console.error('Failed to copy text: ', err);
     });
+};
+
+const showPassword = () => {
+	showSensitiveFieldValue('itemDetailPassword', 'this is a hard coded password');
+};
+
+const showSensitiveOtherField = (sensitiveFieldValueElementId, sensitiveFieldKey) => {
+	showSensitiveFieldValue(sensitiveFieldValueElementId, 'sensitiveFieldKey is ' + sensitiveFieldKey);
+};
+
+const showSensitiveFieldValue = (elementId, value) => {
+	document.getElementById(elementId).value = value;
+	setTimeout(() => {
+		document.getElementById(elementId).value = '';
+	}, 3000);
 };
 </script>
 <script>
@@ -819,6 +846,9 @@ const createItem = () => {
 	if (!title) {
 		return alert("Invalid title!");
 	}
+	const { otherFields, sensitiveKeys } = generateOtherFields();
+	console.log('otherFields, sensitiveKeys');
+	console.log(otherFields, sensitiveKeys);
 	let itemUpdateAPIPromise = null;
 	if (editingItemUid) {
 		itemUpdateAPIPromise = fetch("/item/update", {
@@ -831,7 +861,8 @@ const createItem = () => {
 				title,
 				username,
 				password,
-				otherFields: generateOtherFields(),
+				otherFields,
+				sensitiveKeys,
 				_id: editingItemUid,
 			})
 		});
@@ -846,7 +877,8 @@ const createItem = () => {
 				title,
 				username,
 				password,
-				otherFields: generateOtherFields(),
+				otherFields,
+				sensitiveKeys,
 			})
 		});
 	}
@@ -872,11 +904,16 @@ const createItem = () => {
 const generateOtherFields = () => {
 	const allOtherFieldsKeyElements = document.querySelectorAll('[id^="newItemFieldKey"]');
 	const allOtherFieldsValueElements = document.querySelectorAll('[id^="newItemFieldValue"]');
-	const otherFieldsObject = {};
+	const allOtherFieldsSensitiveElements = document.querySelectorAll('[id^="newItemFieldIsSensitive"]');
+	const otherFields = {};
+	const sensitiveKeys = [];
 	allOtherFieldsKeyElements.forEach((_, index) => {
-		otherFieldsObject[allOtherFieldsKeyElements[index].value] = allOtherFieldsValueElements[index].value;
+		otherFields[allOtherFieldsKeyElements[index].value] = allOtherFieldsValueElements[index].value;
+		if (allOtherFieldsSensitiveElements[index].checked) {
+			sensitiveKeys.push(allOtherFieldsKeyElements[index].value);
+		}
 	});
-	return otherFieldsObject;
+	return { otherFields, sensitiveKeys };
 };
 
 const updateFolderListForCreateItemModal = (itemUid = null, currentFolderUid = null) => {
@@ -953,7 +990,7 @@ const updateFolderListForCreateItemModal = (itemUid = null, currentFolderUid = n
 };
 
 let randomIndexForAdditionalItemFields = 0;
-const addItemField = (key, value) => {
+const addItemField = (key, value, sensitiveKeys) => {
 	randomIndexForAdditionalItemFields++;
 	const tempRandomIndexForAdditionalItemFields = randomIndexForAdditionalItemFields;
 	let fieldHtml = '<div>\
@@ -964,6 +1001,10 @@ const addItemField = (key, value) => {
 				<input type="text" class="form-control" id="newItemFieldKey' + tempRandomIndexForAdditionalItemFields + '" placeholder="Key" ' + (key ? "value=\"" + key + "\"" : "")+ '>\
 			</span>\
 			<input type="text" class="form-control" id="newItemFieldValue' + tempRandomIndexForAdditionalItemFields + '" placeholder="Value" ' + (value ? "value=\"" + value + "\"" : "") + '>\
+			<span class="input-group-text p-0 pr-2 pl-2" id="inputGroup-sizing-lg">\
+				<input type="checkbox" id="newItemFieldIsSensitive' + tempRandomIndexForAdditionalItemFields + '">\
+				<label for="newItemFieldIsSensitive' + tempRandomIndexForAdditionalItemFields + '" class="mb-0">Sensitive</label>\
+			</span>\
 		</div>\
 	</div>';
 	const additionalItemFieldsElement = document.getElementById('additionalItemFields');

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const chalk = require("chalk");
 const bcrypt = require('bcryptjs');
-const CryptoJS = require('crypto-js');
+const crypto = require('crypto');
 
 
 const connectDB: Function = async () => {
@@ -23,12 +23,26 @@ const getHashedPassword: Function = async (p: any) => {
     return bcrypt.hash(p, salt);
 };
 
+const algorithm = process.env.ENCRYPTION_ALGORITHM;
+const encoder = new TextEncoder();
+const plaintext_bytes = encoder.encode(process.env.ENCRYPTION_KEY);
+
 const encryptText: Function = async (text: any) => {
-  return CryptoJS.AES.encrypt(text, process.env.ENCRYPTION_KEY);
+  const iv = crypto.randomBytes(16);  // 16-byte IV
+  const cipher = crypto.createCipheriv(algorithm, plaintext_bytes, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return iv.toString('hex') + ':' + encrypted;
 };
 
 const decryptText: Function = async (text: any) => {
-  return CryptoJS.AES.decrypt(text, process.env.ENCRYPTION_KEY);
+  const parts = text.split(':');
+  const ivFromEncrypted = Buffer.from(parts.shift(), 'hex');
+  const encryptedData = parts.join(':');
+  const decipher = crypto.createDecipheriv(algorithm, plaintext_bytes, ivFromEncrypted);
+  let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
 };
 
 module.exports = {

@@ -235,15 +235,19 @@ const itemChanged = (itemUidToSelect) => {
 		const otherFieldKeys = Object.keys(item.otherFields || {});
 		document.getElementById('itemDetailOtherFields').innerHTML = '';
 		otherFieldKeys.forEach((ofK, index) => {
+			let sensitiveEyeButtonHtml = '';
+			if (item.sensitiveKeys?.indexOf(ofK) > -1 )
+				sensitiveEyeButtonHtml = '<button id="sensitiveValueShowBtn' + index + '" class="btn btn-primary"><i class="bi bi-eye-slash"></i></button>';
 			let fieldHtml = '<div>\
 				\
 				<div class="input-group input-group-lg">\
 					<span class="input-group-text p-0 pr-2 pl-2">\
-						<input type="text" disabled class="form-control" placeholder="Key" value="' + ofK + '">\
-                        <button id="keyCopyBtn' + index + '" class="btn btn-success" onclick="copyText("' + ofK + '")"><i class="bi bi-copy"></i></button>\
+						<input type="text" disabled class="form-control" value="' + ofK + '" placeholder="******">\
+            <button id="keyCopyBtn' + index + '" class="btn btn-success" onclick="copyText("' + ofK + '")"><i class="bi bi-copy"></i></button>\
 					</span>\
-					<input type="text" disabled class="form-control" placeholder="Value" value="' + item.otherFields[ofK] + '">\
-                    <button id="valueCopyBtn' + index + '" class="btn btn-success"><i class="bi bi-copy"></i></button>\
+					<input id="sensitiveValueField' + index + '" type="text" disabled class="form-control" value="' + item.otherFields[ofK] + '" placeholder="******">\
+          ' + sensitiveEyeButtonHtml + '\
+          <button id="valueCopyBtn' + index + '" class="btn btn-success"><i class="bi bi-copy"></i></button>\
 				</div>\
 			</div>';
 			const otherFieldsElement = document.getElementById('itemDetailOtherFields');
@@ -255,6 +259,9 @@ const itemChanged = (itemUidToSelect) => {
 			});
 			document.getElementById('valueCopyBtn' + index).addEventListener('click', () => {
 				copyText(item.otherFields[ofK]);
+			});
+			document.getElementById('sensitiveValueShowBtn' + index)?.addEventListener('click', () => {
+				showSensitiveOtherField('sensitiveValueField' + index, ofK);
 			});
 		});
 		hideLoader();
@@ -334,4 +341,19 @@ const copyText = text => {
     .catch(err => {
       console.error('Failed to copy text: ', err);
     });
+};
+
+const showPassword = () => {
+	showSensitiveFieldValue('itemDetailPassword', 'this is a hard coded password');
+};
+
+const showSensitiveOtherField = (sensitiveFieldValueElementId, sensitiveFieldKey) => {
+	showSensitiveFieldValue(sensitiveFieldValueElementId, 'sensitiveFieldKey is ' + sensitiveFieldKey);
+};
+
+const showSensitiveFieldValue = (elementId, value) => {
+	document.getElementById(elementId).value = value;
+	setTimeout(() => {
+		document.getElementById(elementId).value = '';
+	}, 3000);
 };

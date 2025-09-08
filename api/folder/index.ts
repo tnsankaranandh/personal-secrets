@@ -1,11 +1,11 @@
 const { FolderModel } = require("../../models/Folder");
+const { ItemModel } = require("../../models/Item");
 const chalk = require("chalk");
+const mongoose = require("mongoose");
 
 const list: any = async (req: any, res: any, next: any) => {
-  console.log("in folders api list function");
   try {
     let folders = await FolderModel.find({});
-    console.log('folders: ', folders);
     res.send({ folders });
   } catch (e) {
     console.log(
@@ -17,7 +17,6 @@ const list: any = async (req: any, res: any, next: any) => {
 };
 
 const detail: any = async (req: any, res: any, next: any) => {
-  console.log("in folders api list function");
   try {
     const { folderUid } = req.params;
     let folder = await FolderModel.findById(folderUid);
@@ -33,7 +32,6 @@ const detail: any = async (req: any, res: any, next: any) => {
 
 const create: any = async (req: any, res: any, next: any) => {
   try {
-    console.log(req.body);
     const newFolderObject = new FolderModel({
       name: req.body.name,
     });
@@ -51,17 +49,33 @@ const create: any = async (req: any, res: any, next: any) => {
 
 const update: any = async (req: any, res: any, next: any) => {
   try {
-    console.log(req.body);
     const updatedFolder = await FolderModel.findByIdAndUpdate(req.body._id, {
       name: req.body.name,
     }, {
       new: true
     });
-    console.log(updatedFolder);
     res.send(updatedFolder);
   } catch (e) {
     console.log(
       'Error while updating folder!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
+const delete: any = async (req: any, res: any, next: any) => {
+  try {
+    const { folderUid } = req.params;
+    const itemsDeleteResult = await ItemModel.deleteMany({
+      folderUid: mongoose.types.ObjectId(folderUid)
+    });
+    console.log(itemsDeleteResult);
+    const deletedFolder = await FolderModel.findByIdAndDelete(folderUid);
+    res.send(deletedFolder);
+  } catch (e) {
+    console.log(
+      'Error while deleting folder!',
       chalk.red('✗')
     );
     next(e);
@@ -73,4 +87,5 @@ module.exports = {
   detail,
   create,
   update,
+  delete,
 };

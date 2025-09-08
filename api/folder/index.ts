@@ -64,15 +64,14 @@ const update: any = async (req: any, res: any, next: any) => {
   }
 };
 
-const delete: any = async (req: any, res: any, next: any) => {
+const deleteFolder: any = async (req: any, res: any, next: any) => {
   try {
     const { folderUid } = req.params;
-    const itemsDeleteResult = await ItemModel.deleteMany({
-      folderUid: mongoose.types.ObjectId(folderUid)
+    await ItemModel.deleteMany({
+      folderUid: mongoose.Types.ObjectId(folderUid)
     });
-    console.log(itemsDeleteResult);
-    const deletedFolder = await FolderModel.findByIdAndDelete(folderUid);
-    res.send(deletedFolder);
+    await FolderModel.findByIdAndDelete(folderUid);
+    res.send({});
   } catch (e) {
     console.log(
       'Error while deleting folder!',
@@ -87,5 +86,5 @@ module.exports = {
   detail,
   create,
   update,
-  delete,
+  deleteFolder,
 };

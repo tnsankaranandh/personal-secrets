@@ -344,6 +344,15 @@ const copyText = text => {
     });
 };
 
+const toggleActionsMenu = () => {
+	const isMenuOpen = document.getElementById("actionsMenu").style.display === "block";
+	if (isMenuOpen) {
+		document.getElementById("actionsMenu").style.display = "none";
+	} else {
+		document.getElementById("actionsMenu").style.display = "block";
+	}
+};
+
 const getSensitiveFieldValue = async (fieldKey) => {
 	const itemUid = document.getElementById('itemSelect').value;
 	try {
@@ -406,7 +415,7 @@ $('#deleteFolderBtn').on('confirmed.bs.confirmation', function () {
 
 $('#deleteItemBtn').on('confirmed.bs.confirmation', function () {
 	showLoader();
-	fetch("/folder/delete/" + document.getElementById('folderSelect').value, {
+	fetch("/item/delete/" + document.getElementById('itemSelect').value, {
 		method: 'DELETE',
 		headers: {
 			'Content-Type': 'application/json',
@@ -416,43 +425,18 @@ $('#deleteItemBtn').on('confirmed.bs.confirmation', function () {
 			if (await validateInvalidSessionFromAPIResponse(response)) 
 				throw new Error('Invalid Session');
 
-			throw new Error('Network response was not ok for delete folder');
+			throw new Error('Network response was not ok for delete item');
 		}
 		return response.json();
 	})
-	.then(() => { updateFolderList(); })
+	.then(() => {
+		folderChanged(document.getElementById('folderSelect').value);
+	})
 	.catch(error => {
-		console.error('Error while deleting folder:', error);
+		console.error('Error while deleting item:', error);
 		hideLoader();
 	});
 });
-
-const deleteSelectedItem = () => {
-	if(confirm("Are you sure to delete the item?")) {
-		showLoader();
-		fetch("/item/delete/" + document.getElementById('itemSelect').value, {
-			method: 'DELETE',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		}).then(async response => {
-			if (!response.ok) {
-				if (await validateInvalidSessionFromAPIResponse(response)) 
-					throw new Error('Invalid Session');
-
-				throw new Error('Network response was not ok for delete item');
-			}
-			return response.json();
-		})
-		.then(() => {
-			folderChanged(document.getElementById('folderSelect').value);
-		})
-		.catch(error => {
-			console.error('Error while deleting item:', error);
-			hideLoader();
-		});
-	}
-};
 
 $('[data-toggle=confirmation]').confirmation({
   rootSelector: '[data-toggle=confirmation]',

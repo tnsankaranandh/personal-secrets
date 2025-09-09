@@ -73,13 +73,19 @@ const createBootstrapAlert = (message, type) => {
 	const closeButton = document.createElement('button');
 	closeButton.innerHTML = '<i class="bi bi-x"></i>';
 	closeButton.className = `btn btn-danger`;
+	closeButton.setAttribute('id', 'alertCloseButton' + alertElementCount);
 	alertElement.appendChild(closeButton);
 
 	const alertContainer = document.getElementById('loginAlertContainer') || document.getElementById('listAlertContainer');
 	alertContainer.appendChild(alertElement);
 	
-	closeButton.addEventListener('click', () => {
-		document.getElementById('alert' + alertElementCount).remove();
+	document.getElementById('alertCloseButton' + alertElementCount).addEventListener('click', (event) => {
+		let closeButtonId = event.target.getAttribute('id');
+		if (!closeButtonId) {
+			closeButtonId = event.target.parentElement.getAttribute('id');
+		}
+		if (!closeButtonId) return;
+		document.getElementById('alert' + closeButtonId.split('alertCloseButton')[1]).remove();
 	});
 
 	setTimeout(() => { closeButton.click(); }, 5500);

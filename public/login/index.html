@@ -213,7 +213,12 @@ input:disabled {
         <i class="fa fa-lock"></i>
         <input type="password" placeholder="Password" id="password" value="admin">
     </div>
-    <button onclick="login()" class="login-btn">Login</button>
+    <button id="loginEnabledButton" onclick="login()" class="login-btn text-center">
+      Login
+    </button>
+    <button id="loginDisabledButton" type="button" class="btn btn-primary" disabled>
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+    </button>
     </div>
     <div class="image">
       <div class="overlay">
@@ -301,20 +306,30 @@ const createBootstrapAlert = (message, type) => {
 	const closeButton = document.createElement('button');
 	closeButton.innerHTML = '<i class="bi bi-x"></i>';
 	closeButton.className = `btn btn-danger`;
+	closeButton.setAttribute('id', 'alertCloseButton' + alertElementCount);
 	alertElement.appendChild(closeButton);
 
 	const alertContainer = document.getElementById('loginAlertContainer') || document.getElementById('listAlertContainer');
 	alertContainer.appendChild(alertElement);
 	
-	closeButton.addEventListener('click', () => {
-		document.getElementById('alert' + alertElementCount).remove();
+	document.getElementById('alertCloseButton' + alertElementCount).addEventListener('click', (event) => {
+		let closeButtonId = event.target.getAttribute('id');
+		if (!closeButtonId) {
+			closeButtonId = event.target.parentElement.getAttribute('id');
+		}
+		if (!closeButtonId) return;
+		document.getElementById('alert' + closeButtonId.split('alertCloseButton')[1]).remove();
 	});
 
 	setTimeout(() => { closeButton.click(); }, 5500);
 }
 </script>
 <script>
+document.getElementById('loginEnabledButton').style.display = "block";
+document.getElementById('loginDisabledButton').style.display = "none";
 const login = () => {
+	document.getElementById('loginEnabledButton').style.display = "none";
+	document.getElementById('loginDisabledButton').style.display = "block";
 	fetch("/authenticateUser", {
 		method: 'POST',
 		headers: {
@@ -333,10 +348,14 @@ const login = () => {
 		return response.json();
 	})
 	.then(data => {
+		document.getElementById('loginEnabledButton').style.display = "block";
+		document.getElementById('loginDisabledButton').style.display = "none";
 		addUserSession(data.user);
 		window.location.href = '/listSecrets';
 	})
 	.catch(error => {
+		document.getElementById('loginEnabledButton').style.display = "block";
+		document.getElementById('loginDisabledButton').style.display = "none";
 		console.error('Error while logging in:', error);
 	});
 };

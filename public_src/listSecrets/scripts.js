@@ -336,11 +336,34 @@ const copyItemPassword = () => {
 const copyText = text => {
 	navigator.clipboard.writeText(text)
     .then(() => {
-      console.log('Text successfully copied to clipboard!');
+    	createBootstrapAlert("Copied Successfully!", "success");
     })
     .catch(err => {
+    	createBootstrapAlert("Failed to copy text!", "danger");
       console.error('Failed to copy text: ', err);
     });
+};
+
+const getSensitiveFieldValue = async (fieldKey) => {
+	const itemUid = document.getElementById('itemSelect').value;
+	try {
+		const encryptedResponse = await fetch("/item/getSecuredFieldValue/" + itemUid + "/" + fieldKey, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+		const encryptedData = await encryptedResponse.json();
+
+		const decryptedResponse = await fetch("/item/decrypt/" + itemUid + "/" + fieldKey, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+	} catch (e) {
+		console.error('Error while getting sensitive value! ', e);
+	}
 };
 
 const showPassword = () => {
@@ -358,30 +381,51 @@ const showSensitiveFieldValue = (elementId, value) => {
 	}, 3000);
 };
 
-const deleteSelectedFolder = () => {
-	if(confirm("Are you sure to delete the folder? All the items inside this folder will be deleted!")) {
-		showLoader();
-		fetch("/folder/delete/" + document.getElementById('folderSelect').value, {
-			method: 'DELETE',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		}).then(async response => {
-			if (!response.ok) {
-				if (await validateInvalidSessionFromAPIResponse(response)) 
-					throw new Error('Invalid Session');
+$('#deleteFolderBtn').on('confirmed.bs.confirmation', function () {
+	showLoader();
+	fetch("/folder/delete/" + document.getElementById('folderSelect').value, {
+		method: 'DELETE',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	}).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
 
-				throw new Error('Network response was not ok for delete folder');
-			}
-			return response.json();
-		})
-		.then(() => { updateFolderList(); })
-		.catch(error => {
-			console.error('Error while deleting folder:', error);
-			hideLoader();
-		});
-	}
-};
+			throw new Error('Network response was not ok for delete folder');
+		}
+		return response.json();
+	})
+	.then(() => { updateFolderList(); })
+	.catch(error => {
+		console.error('Error while deleting folder:', error);
+		hideLoader();
+	});
+});
+
+$('#deleteItemBtn').on('confirmed.bs.confirmation', function () {
+	showLoader();
+	fetch("/folder/delete/" + document.getElementById('folderSelect').value, {
+		method: 'DELETE',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	}).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response)) 
+				throw new Error('Invalid Session');
+
+			throw new Error('Network response was not ok for delete folder');
+		}
+		return response.json();
+	})
+	.then(() => { updateFolderList(); })
+	.catch(error => {
+		console.error('Error while deleting folder:', error);
+		hideLoader();
+	});
+});
 
 const deleteSelectedItem = () => {
 	if(confirm("Are you sure to delete the item?")) {
@@ -409,3 +453,7 @@ const deleteSelectedItem = () => {
 		});
 	}
 };
+
+$('[data-toggle=confirmation]').confirmation({
+  rootSelector: '[data-toggle=confirmation]',
+});

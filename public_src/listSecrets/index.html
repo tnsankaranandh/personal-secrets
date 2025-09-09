@@ -33,7 +33,21 @@
                 <button id="editFolderBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateFolderModal(true)">
                   <i class="bi bi-pencil-square"></i> Edit Selected Folder
                 </button>
-                <button id="deleteFolderBtn" type="button" class="btn btn-danger mb-3 mt-2" onClick="deleteSelectedFolder(true)">
+                <button
+                  id="deleteFolderBtn"
+                  type="button"
+                  class="btn btn-danger mb-3 mt-2"
+                  data-singleton="true"
+                  data-toggle="confirmation"
+                  data-btn-ok-label="DELETE"
+                  data-btn-ok-class="btn btn-danger"
+                  data-btn-ok-icon-class="bi bi-trash"
+                  data-btn-cancel-label="NO"
+                  data-btn-cancel-class="btn btn-success"
+                  data-btn-cancel-icon-class="bi bi-check"
+                  data-title="ARE YOU SURE?"
+                  data-content="The folder will be permanently deleted, along with all the items inside it. This action can never be undone!!"
+                >
                   <i class="bi bi-trash"></i> Delete Selected Folder
                 </button>
                 <button id="createFolderBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateFolderModal()">
@@ -44,7 +58,7 @@
                 <button id="editItemBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateItemModal(true)">
                   <i class="bi bi-pencil-square"></i> Edit Selected Item
                 </button>
-                <button id="deleteItemBtn" type="button" class="btn btn-danger mb-3 mt-2" onClick="deleteSelectedItem(true)">
+                <button id="deleteItemBtn" type="button" class="btn btn-danger mb-3 mt-2" onClick="deleteSelectedItem()" data-toggle="confirmation" data-singleton="true">
                   <i class="bi bi-trash"></i> Delete Selected Item
                 </button>
                 <button id="createItemBtn" type="button" class="btn btn-success mb-3 mt-2" onClick="openCreateItemModal()">
@@ -112,11 +126,15 @@
     <div id="loginAlertContainer" class="alert-container">
     </div>
 
+    <button class="btn btn-default" data-toggle="confirmation">Confirmation</button>
+
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
+
+    <script src="../common/bootstrap-confirmation.min.js?__inline"></script>
   </body>
 <script src="../common/scripts.js?__inline"></script>
 <script src="./scripts.js?__inline"></script>

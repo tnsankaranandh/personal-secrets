@@ -34,12 +34,10 @@ const detail: any = async (req: any, res: any, next: any) => {
     const { itemUid } = req.params;
     let item = await ItemModel.findById(itemUid);
     item = item.toObject();
-    console.log('item before removing sensitive fields ', item);
     item.password = '';
     (item.sensitiveKeys || []).forEach((sk: any) => {
       (item.otherFields || {})[sk] = '';
     });
-    console.log('item after removing sensitive fields ', item);
     res.send({ item });
   } catch (e) {
     console.log(

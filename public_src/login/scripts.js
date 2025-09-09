@@ -1,4 +1,8 @@
+document.getElementById('loginEnabledButton').style.display = "block";
+document.getElementById('loginDisabledButton').style.display = "none";
 const login = () => {
+	document.getElementById('loginEnabledButton').style.display = "none";
+	document.getElementById('loginDisabledButton').style.display = "block";
 	fetch("/authenticateUser", {
 		method: 'POST',
 		headers: {
@@ -17,10 +21,14 @@ const login = () => {
 		return response.json();
 	})
 	.then(data => {
+		document.getElementById('loginEnabledButton').style.display = "block";
+		document.getElementById('loginDisabledButton').style.display = "none";
 		addUserSession(data.user);
 		window.location.href = '/listSecrets';
 	})
 	.catch(error => {
+		document.getElementById('loginEnabledButton').style.display = "block";
+		document.getElementById('loginDisabledButton').style.display = "none";
 		console.error('Error while logging in:', error);
 	});
 };

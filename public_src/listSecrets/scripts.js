@@ -356,31 +356,48 @@ const toggleActionsMenu = () => {
 const getSensitiveFieldValue = async (fieldKey) => {
 	const itemUid = document.getElementById('itemSelect').value;
 	try {
-		const encryptedResponse = await fetch("/item/getSecuredFieldValue/" + itemUid + "/" + fieldKey, {
-			method: 'GET',
+		const encryptedResponse = await fetch("/item/getSecuredFieldValue", {
+			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
+			body: JSON.stringify({
+				itemUid,
+				field: fieldKey
+			})
 		});
 		const encryptedData = await encryptedResponse.json();
 
-		const decryptedResponse = await fetch("/item/decrypt/" + itemUid + "/" + fieldKey, {
-			method: 'GET',
+		const doubleEncryptedString = await doubleEncrypt(encryptedData.data);
+
+		const decryptedResponse = await fetch("/item/decrypt/", {
+			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
+			body: JSON.stringify({
+				doubleEncryptedString,
+			})
 		});
+		const decryptedData = await decryptedResponse.json();
+		return decryptedData;
 	} catch (e) {
 		console.error('Error while getting sensitive value! ', e);
 	}
 };
 
-const showPassword = () => {
-	showSensitiveFieldValue('itemDetailPassword', 'this is a hard coded password');
+const showPassword = async () => {
+	showLoader();
+	const password = await getSensitiveFieldValue('password');
+	showSensitiveFieldValue('itemDetailPassword', password);
+	hideLoader();
 };
 
-const showSensitiveOtherField = (sensitiveFieldValueElementId, sensitiveFieldKey) => {
-	showSensitiveFieldValue(sensitiveFieldValueElementId, 'sensitiveFieldKey is ' + sensitiveFieldKey);
+const showSensitiveOtherField = async (sensitiveFieldValueElementId, sensitiveFieldKey) => {
+	showLoader();
+	const sensitiveOtherFieldValue = await getSensitiveFieldValue('otherFields.' + sensitiveFieldKey);
+	showSensitiveFieldValue(sensitiveFieldValueElementId, sensitiveOtherFieldValue);
+	hideLoader();
 };
 
 const showSensitiveFieldValue = (elementId, value) => {

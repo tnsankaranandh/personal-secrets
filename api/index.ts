@@ -95,6 +95,9 @@ app.post('/user/create', validateSessionFilter, connectDBFilter, UserAPI.create)
 app.get('/user/:userUid', validateSessionFilter, connectDBFilter, UserAPI.detail);
 app.put('/user/update', validateSessionFilter, connectDBFilter, UserAPI.update);
 
+app.post('/item/getSecuredFieldValue', validateSessionFilter, connectDBFilter, ItemAPI.getSecuredFieldValue);
+app.post('/item/update', validateSessionFilter, connectDBFilter, ItemAPI.update);
+
 
 app.all('*', (req: any, res: any) => res.redirect('/login'));
 

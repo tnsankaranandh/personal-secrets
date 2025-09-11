@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const chalk = require("chalk");
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-
+const { put } = require("@vercel/blob");
 
 const connectDB: Function = async () => {
   try {
@@ -45,9 +45,48 @@ const decryptText: Function = async (text: any) => {
   return decrypted;
 };
 
+const doubleEncryptionUtils: any = {
+  generateRSAKeyPairs: () => {
+    crypto.generateKeyPair('rsa', {
+      modulusLength: 4096, // Recommended length for strong RSA keys
+      publicKeyEncoding: {
+        type: 'spki', // Subject Public Key Info
+        format: 'pem' // Privacy-Enhanced Mail format
+      },
+      privateKeyEncoding: {
+        type: 'pkcs8', // PKCS #8 format
+        format: 'pem',
+        cipher: 'aes-256-cbc', // Encrypt the private key
+        passphrase: 'your_strong_passphrase' // Passphrase for private key encryption
+      }
+    }, async (err: any, publicKey: any, privateKey: any) => {
+      if (err) {
+        console.error('Error generating key pair:', err);
+        throw (err);
+        return;
+      }
+
+      const d: any = new Date();
+      const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
+
+      console.log('Key pair generated successfully!');
+      console.log('PUBLIC KEY-----------------------');
+      console.log(publicKey);
+      console.log('PRIVATE KEY----------------------');
+      console.log(privateKey);
+
+      await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'private' });
+      await put(uniqueDateString + '/private_key.pem', publicKey, { access: 'private' });
+      console.log("Key pairs written to vercel blob storage!!!!!");
+
+    });
+  },
+};
+
 module.exports = {
   connectDB,
   getHashedPassword,
   encryptText,
   decryptText,
+  doubleEncryptionUtils,
 };

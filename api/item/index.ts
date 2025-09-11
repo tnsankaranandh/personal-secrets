@@ -87,10 +87,30 @@ const deleteItem: any = async (req: any, res: any, next: any) => {
   }
 };
 
+const getSecuredFieldValue: any = async (req: any, res: any, next: any) => {
+  try {
+    const { itemUid, field } = req.body;
+    const item = await ItemModel.findById(itemUid);
+    const separateFields = field?.split('.');
+    let encryptedData = item;
+    separateFields.forEach((sf: any) => {
+      encryptedData = encryptedData[sf];
+    });
+    res.send({ data: encryptedData });
+  } catch (e) {
+    console.log(
+      'Error while deleting item!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
 module.exports = {
   list,
   create,
   detail,
   update,
   deleteItem,
+  getSecuredFieldValue,
 };

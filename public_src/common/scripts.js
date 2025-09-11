@@ -89,4 +89,8 @@ const createBootstrapAlert = (message, type) => {
 	});
 
 	setTimeout(() => { closeButton.click(); }, 5500);
-}
+};
+
+const doubleEncrypt = encryptedValue => {
+	
+};

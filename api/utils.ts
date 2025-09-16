@@ -38,12 +38,19 @@ const encryptText: Function = async (text: any) => {
 };
 
 const decryptText: Function = async (text: any) => {
+  console.log(1);
   const parts = text.split(':');
+  console.log(2);
   const ivFromEncrypted = Buffer.from(parts.shift(), 'hex');
+  console.log(3);
   const encryptedData = parts.join(':');
+  console.log(4);
   const decipher = crypto.createDecipheriv(algorithm, plaintext_bytes, ivFromEncrypted);
+  console.log(5);
   let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+  console.log(6);
   decrypted += decipher.final('utf8');
+  console.log(7);
   return decrypted;
 };
 
@@ -109,3 +116,13 @@ module.exports = {
   doubleEncryptionUtils,
   decryptData
 };
+
+async function logs() {
+console.log(
+  await doubleEncryptionUtils.decrypt(
+    'K4oJ5dxrY5EdRT0DP7qG+v1M2wyjB2I5iP6xJVLKW78tyvYaRSfbnBQnbU3K0HRwbw7qb8Kr4ovr742wdtnurBJCMeZPBu25kmOKK8mpZvV6I4raRDn2PTi664ZtNpjTFX0XZLinGLpxJKJvAkB4WWay/C2dZ3yx5iAE8UXAjBlQl1fkjH2vMacexipEb1IM6zaVTq2CyyjXgSiH8paSbmPLglVJSYjAaobsXjdje7KD8PnTOroV30c0m2J8oItnD8zeHHAuzE5xoMchs7d27wJ3OHqR1n2DMdix+yDc0v09WzjtYZp4J4ohNsi1Fnzhqfx0Xi0U03wrsUun3RDVJA==',
+    'https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/public_key.pem-key-https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/private_key.pem'
+  )
+);
+}
+logs();

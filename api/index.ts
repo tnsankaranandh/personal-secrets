@@ -127,5 +127,3 @@ logs();*/
 // 	console.log(await utils.decryptText("69a0479202c979614c184db6e58e7420:725493dd08e5ac7a9e9fc46571b44522")); 
 // };
 // logs();
-
-require('./doubleEncryptionTest');

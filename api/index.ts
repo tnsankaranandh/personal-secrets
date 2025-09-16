@@ -96,7 +96,8 @@ app.get('/user/:userUid', validateSessionFilter, connectDBFilter, UserAPI.detail
 app.put('/user/update', validateSessionFilter, connectDBFilter, UserAPI.update);
 
 app.post('/item/getSecuredFieldValue', validateSessionFilter, connectDBFilter, ItemAPI.getSecuredFieldValue);
-app.post('/item/update', validateSessionFilter, connectDBFilter, ItemAPI.update);
+app.get('/unknownApi', validateSessionFilter, connectDBFilter, ItemAPI.unkownApi);
+app.post('/item/decrypt', validateSessionFilter, connectDBFilter, ItemAPI.decrypt);
 
 
 app.all('*', (req: any, res: any) => res.redirect('/login'));
@@ -126,3 +127,5 @@ logs();*/
 // 	console.log(await utils.decryptText("69a0479202c979614c184db6e58e7420:725493dd08e5ac7a9e9fc46571b44522")); 
 // };
 // logs();
+
+require('./doubleEncryptionTest');

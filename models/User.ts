@@ -44,7 +44,7 @@ userSchema.pre('findOneAndUpdate', async function(next: Function) { //update use
  */
 userSchema.methods.generateAuthToken = function() {
   const user = this;
-  return jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
 /**

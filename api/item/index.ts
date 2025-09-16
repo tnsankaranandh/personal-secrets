@@ -1,4 +1,5 @@
 const { ItemModel } = require("../../models/Item");
+const { doubleEncryptionUtils } = require("../utils");
 const chalk = require("chalk");
 
 const list: any = async (req: any, res: any, next: any) => {
@@ -96,10 +97,50 @@ const getSecuredFieldValue: any = async (req: any, res: any, next: any) => {
     separateFields.forEach((sf: any) => {
       encryptedData = encryptedData[sf];
     });
-    res.send({ data: encryptedData });
+
+    const keyUrls = await doubleEncryptionUtils.generateRSAKeyPairs();
+
+    res.send({
+      data: encryptedData,
+      keyUrls,
+    });
   } catch (e) {
     console.log(
-      'Error while deleting item!',
+      'Error while getting secured item!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
+const unkownApi: any = async (req: any, res: any, next: any) => {
+  try {
+    const { randomValue } = req.query;
+    const vercelBlobResponse = await fetch(randomValue);
+    const vercelBlobData = await vercelBlobResponse.text();
+    res.send({
+      randomData: vercelBlobData,
+    });
+  } catch (e) {
+    console.log(
+      'Error while getting vercel blob item!',
+      chalk.red('✗')
+    );
+    next(e);
+  }
+};
+
+const decrypt: any = async (req: any, res: any, next: any) => {
+  try {
+    const { doubleEncryptedString, keyUrls } = req.body;
+    const doubleDecryptedString: String = await doubleEncryptionUtils.decrypt(doubleEncryptedString, keyUrls);
+    console.log(doubleDecryptedString, ' dd string ________________');
+    res.send({
+      decryptedValue: doubleDecryptedString,
+    });
+  } catch (e) {
+    console.log(
+      'Error while getting secured item!',
       chalk.red('✗')
     );
     next(e);
@@ -113,4 +154,6 @@ module.exports = {
   update,
   deleteItem,
   getSecuredFieldValue,
+  unkownApi,
+  decrypt,
 };

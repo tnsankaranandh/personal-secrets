@@ -1,6 +1,6 @@
 let editingItemUid = null;
 let sensitiveFieldPlaceholder = 'Value';
-const createItem = () => {
+const createItem = async() => {
 	const folderUid = document.getElementById("newItemFolderUid").value;
 	const title = document.getElementById("newItemTitle").value;
 	const username = document.getElementById("newItemUsername").value;
@@ -9,8 +9,6 @@ const createItem = () => {
 		return alert("Invalid title!");
 	}
 	const { otherFields, sensitiveKeys } = generateOtherFields();
-	console.log('otherFields, sensitiveKeys');
-	console.log(otherFields, sensitiveKeys);
 	let itemUpdateAPIPromise = null;
 	if (editingItemUid) {
 		const updatedObject = {
@@ -29,7 +27,7 @@ const createItem = () => {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(updatedObject)
+			body: JSON.stringify(await getEncryptedDataWithPrivateKey(updatedObject))
 		});
 	} else {
 		itemUpdateAPIPromise = fetch("/item/create", {
@@ -37,14 +35,14 @@ const createItem = () => {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({
+			body: JSON.stringify(await getEncryptedDataWithPrivateKey({
 				folderUid,
 				title,
 				username,
 				password,
 				otherFields,
 				sensitiveKeys,
-			})
+			}))
 		});
 	}
 	itemUpdateAPIPromise?.then(async response => {

@@ -1,4 +1,5 @@
 const { UserModel } = require("../../models/User");
+const { decryptData } = require("../utils");
 const chalk = require("chalk");
 
 const authenticate: any = async (req: any, res: any, next: any) => {
@@ -22,7 +23,7 @@ const authenticate: any = async (req: any, res: any, next: any) => {
 
 const create: any = async (req: any, res: any, next: any) => {
   try {
-    const newUserObject = new UserModel(req.body);
+    const newUserObject = new UserModel(decryptData(req.body));
     await newUserObject.save();
     res.send(newUserObject);
   } catch (e) {
@@ -50,13 +51,14 @@ const detail: any = async (req: any, res: any, next: any) => {
 
 const update: any = async (req: any, res: any, next: any) => {
   try {
-    let previousUser = await UserModel.findById(req.body._id);
+    const decryptedBody = decryptData(req.body);
+    let previousUser = await UserModel.findById(decryptedBody._id);
     previousUser = previousUser.toObject();
-    previousUser.emailid = req.body.emailid;
-    previousUser.username = req.body.username;
-    if (req.body.password) previousUser.password = req.body.password;
-    previousUser.role = req.body.role;
-    const updatedUser = await UserModel.findByIdAndUpdate(req.body._id, previousUser, {
+    previousUser.emailid = decryptedBody.emailid;
+    previousUser.username = decryptedBody.username;
+    if (decryptedBody.password) previousUser.password = decryptedBody.password;
+    previousUser.role = decryptedBody.role;
+    const updatedUser = await UserModel.findByIdAndUpdate(decryptedBody._id, previousUser, {
       new: true
     });
     console.log(updatedUser);

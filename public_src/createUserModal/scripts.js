@@ -1,6 +1,6 @@
 let editingUserUid = null;
 
-const createOrUpdateUser = () => {
+const createOrUpdateUser = async () => {
 	const emailid = document.getElementById("newUserEmailID").value;
 	const role = document.getElementById("newUserRole").value;
 	const username = document.getElementById("newUserUserName").value;
@@ -12,13 +12,13 @@ const createOrUpdateUser = () => {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({
+			body: JSON.stringify(await getEncryptedDataWithPrivateKey({
 				emailid,
 				username,
 				role,
 				password,
 				_id: editingUserUid
-			})
+			}))
 		});
 	} else {
 		userUpdateAPIPromise = fetch("/user/create", {
@@ -26,12 +26,12 @@ const createOrUpdateUser = () => {
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({
+			body: JSON.stringify(await getEncryptedDataWithPrivateKey({
 				emailid,
 				username,
 				role,
 				password,
-			})
+			}))
 		});
 	}
 	userUpdateAPIPromise?.then(async response => {

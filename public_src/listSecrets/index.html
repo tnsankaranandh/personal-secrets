@@ -136,7 +136,7 @@
                           <span class="input-group-text"><i class="bi bi-lock"></i></span>
                           <input type="text" disabled placeholder="******" class="form-control" id="itemDetailPassword">
                           <button class="btn btn-primary" onclick="showPassword()"><i class="bi bi-eye-slash"></i></button>
-                          <button class="btn btn-success" onclick="copyItemPassword()"><i class="bi bi-copy"></i></button>
+                          <button class="btn btn-success" onclick="copyItemPassword()" id="itemDetailCopyPassword"><i class="bi bi-copy"></i></button>
                         </div>
                       </div>
                       <div class="row justify-content-between">
@@ -175,7 +175,7 @@
 
 
     <script src="../common/bootstrap-confirmation.min.js?__inline"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsencrypt@latest/bin/jsencrypt.min.js"></script>
   </body>
 <script src="../common/scripts.js?__inline"></script>
 <script src="./scripts.js?__inline"></script>

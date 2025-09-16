@@ -194,6 +194,7 @@ input:disabled {
   position: absolute;
   top: 0;
   right: 0;
+  z-index: 1050;
 }
 
 .item-detail-contents input::placeholder, .create-item-modal-content input::placeholder, .create-user-modal-content input::placeholder {
@@ -355,132 +356,41 @@ const createBootstrapAlert = (message, type) => {
 			closeButtonId = event.target.parentElement.getAttribute('id');
 		}
 		if (!closeButtonId) return;
-		document.getElementById('alert' + closeButtonId.split('alertCloseButton')[1]).remove();
+		document.getElementById('alert' + closeButtonId.split('alertCloseButton')[1])?.remove();
 	});
 
 	setTimeout(() => { closeButton.click(); }, 5500);
 };
-
-function base64ToArrayBuffer(base64) {
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-}
-
-function getMessageEncoding(message) {
-    const enc = new TextEncoder();
-    console.log('enc.encode(message)');
-    console.log(enc.encode(message));
-    return enc.encode(message);
-}
-
-async function importPublicKey(spkiPublicKeyBase64) {
-	console.log('spkiPublicKeyBase64 ', spkiPublicKeyBase64.replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', ''));
-    const binaryDer = base64ToArrayBuffer(spkiPublicKeyBase64.replace('-----BEGIN PUBLIC KEY-----', '').replace('-----END PUBLIC KEY-----', '')); // You'll need a helper function for this
-    const publicKey = await window.crypto.subtle.importKey(
-        "spki",
-        binaryDer,
-        {
-            name: "RSA-OAEP",
-            hash: { name: "SHA-256" },
-        },
-        false, // Not extractable
-        ["encrypt"]
-    );
-    return publicKey;
-}
-
-function base64ToArrayBuffer(base64) {
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-}
-
-// Example usage:
-// const myMessage = "This is a secret message.";
-// const spkiKeyExample = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA..."; // Replace with your actual SPKI public key (Base64)
-
-async function encryptData(message, publicKey) {
-    const encodedMessage = getMessageEncoding(message);
-    const encryptedData = await window.crypto.subtle.encrypt(
-        { name: "RSA-OAEP" },
-        publicKey,
-        encodedMessage
-    );
-    return encryptedData; // This will be an ArrayBuffer
-}
-
-function arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-}
-
 
 const doubleEncrypt = async (encryptedValue, keyUrls) => {
 	const publicKeyUrl = keyUrls?.split('-key-')[0];
 	const publicKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(publicKeyUrl));
 	const publicKeyData = await publicKeyResponse.json();
 
-	// const encodedData = new TextEncoder().encode(encryptedValue); // Convert string to Uint8Array
-	// const doubleEncryptedData = await window.crypto.subtle.encrypt(
-	// 	{
-	// 		name: "RSA-OAEP",
-	// 	},
-	// 	await getCryptoKey(publicKeyData.randomData),
-	// 	encodedData
-	// );
-  	// return btoa(String.fromCharCode.apply(null, new Uint8Array(doubleEncryptedData)));
-
   	try {
-        const publicKey = await importPublicKey(publicKeyData.randomData);
-        const encryptedArrayBuffer = await encryptData(encryptedValue, publicKey);
-        const encryptedBase64 = arrayBufferToBase64(encryptedArrayBuffer);
-        console.log("Encrypted Data (Base64):", encryptedBase64);
-        return encryptedBase64;
+  		const crypt = new JSEncrypt();
+  		crypt.setPublicKey(publicKeyData.randomData);
+  		const doubleEncryptedString = crypt.encrypt(encryptedValue);
+        return doubleEncryptedString;
     } catch (error) {
         console.error("Encryption failed:", error);
+        throw error;
     }
 };
 
-const getCryptoKey = async (keyString) => {
-    const binaryDer = pemToArrayBuffer(keyString);
-    const importedKey = await crypto.subtle.importKey(
-        "spki",
-        binaryDer,
-        { name: "RSA-OAEP", hash: "SHA-256" }, // Or "RSASSA-PKCS1-v1_5", etc.
-        true,
-        ["encrypt"] // Or "verify"
-    );
-    return importedKey;
+const getEncryptedDataWithPrivateKey = async data => {
+	const stringifiedData = JSON.stringify(data);
+	const crypt = new JSEncrypt({ default_key_size: 4096 });
+	await crypt.getKey();
+	const publicKey = crypt.getPublicKey();
+	const privateKey = crypt.getPrivateKey();
+	crypt.setPublicKey(publicKey);
+	const encryptedData = crypt.encrypt(stringifiedData);
+	return {
+		data: encryptedData + '-data-' + btoa(privateKey),
+	}
 };
 
-function pemToArrayBuffer(pem) {
-    const base64 = pem
-        .replace(/-----BEGIN PUBLIC KEY-----/, '')
-        .replace(/-----END PUBLIC KEY-----/, '')
-        .replace(/\s/g, '');
-    const raw = window.atob(base64);
-    const rawLength = raw.length;
-    const array = new Uint8Array(new ArrayBuffer(rawLength));
-
-    for (let i = 0; i < rawLength; i++) {
-        array[i] = raw.charCodeAt(i);
-    }
-    return array;
-}
 </script>
 <script>
 document.getElementById('loginEnabledButton').style.display = "block";

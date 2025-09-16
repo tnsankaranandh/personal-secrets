@@ -181,6 +181,7 @@ input:disabled {
   position: absolute;
   top: 0;
   right: 0;
+  z-index: 1050;
 }
 
 .item-detail-contents input::placeholder, .create-item-modal-content input::placeholder, .create-user-modal-content input::placeholder {

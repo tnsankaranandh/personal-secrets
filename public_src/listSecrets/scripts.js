@@ -258,7 +258,10 @@ const itemChanged = (itemUidToSelect) => {
 				copyText(ofK);
 			});
 			document.getElementById('valueCopyBtn' + index).addEventListener('click', () => {
-				copyText(item.otherFields[ofK]);
+				if (item.sensitiveKeys?.indexOf(ofK) === -1 )
+					copyText(item.otherFields[ofK]);
+				else 
+					copySensitiveOtherField(ofK);
 			});
 			document.getElementById('sensitiveValueShowBtn' + index)?.addEventListener('click', () => {
 				showSensitiveOtherField('sensitiveValueField' + index, ofK);
@@ -329,19 +332,52 @@ const copyItemUserName = () => {
 	copyText(document.getElementById('itemDetailUsername').value);
 };
 
-const copyItemPassword = () => {
-	copyText(document.getElementById('itemDetailPassword').value);
+let globalTextToCopy = null;
+const focusCopier = () => {
+	const clearCopyListeners = function () {
+		globalTextToCopy = null;
+		const dummyElementForCopyFocussing = document.getElementById('itemDetailCopyPassword');
+		dummyElementForCopyFocussing.removeEventListener('focus', focusCopier);
+	};
+
+	copyText(globalTextToCopy).then(clearCopyListeners).catch(clearCopyListeners);
+};
+
+const focusDOMAndThenCopy = textToCopy => {
+	globalTextToCopy = textToCopy;
+	const dummyElementForCopyFocussing = document.getElementById('itemDetailCopyPassword');
+	dummyElementForCopyFocussing.removeEventListener('focus', focusCopier);
+	dummyElementForCopyFocussing.addEventListener('focus', focusCopier);
+	dummyElementForCopyFocussing.focus();
+};
+
+const copyItemPassword = async () => {
+	showLoader();
+	const passwordValue = await getSensitiveFieldValue('password');
+	hideLoader();
+	focusDOMAndThenCopy(passwordValue);
+};
+
+const copySensitiveOtherField = async sensitiveFieldKey => {
+	showLoader();
+	const sensitiveOtherFieldValue = await getSensitiveFieldValue('otherFields.' + sensitiveFieldKey);
+	hideLoader();
+	focusDOMAndThenCopy(sensitiveOtherFieldValue);
 };
 
 const copyText = text => {
-	navigator.clipboard.writeText(text)
-    .then(() => {
-    	createBootstrapAlert("Copied Successfully!", "success");
-    })
-    .catch(err => {
-    	createBootstrapAlert("Failed to copy text!", "danger");
-      console.error('Failed to copy text: ', err);
-    });
+	return new Promise((resolve, reject) => {
+		navigator.clipboard.writeText(text)
+	    .then(() => {
+	    	resolve();
+	    	createBootstrapAlert("Copied Successfully!", "success");
+	    })
+	    .catch(err => {
+	    	reject();
+	    	createBootstrapAlert("Failed to copy text!", "danger");
+	      console.error('Failed to copy text: ', err);
+	    });
+	});
 };
 
 const toggleActionsMenu = () => {
@@ -369,7 +405,6 @@ const getSensitiveFieldValue = async (fieldKey) => {
 		const encryptedData = await encryptedResponse.json();
 
 		const doubleEncryptedString = await doubleEncrypt(encryptedData.data, encryptedData.keyUrls);
-		console.log('doubleEncryptedString ', doubleEncryptedString);
 		const decryptedResponse = await fetch("/item/decrypt/", {
 			method: 'POST',
 			headers: {
@@ -380,9 +415,13 @@ const getSensitiveFieldValue = async (fieldKey) => {
 				keyUrls: encryptedData.keyUrls,
 			})
 		});
-		const decryptedData = await decryptedResponse.json();
-		console.log('decryptedData ', decryptedData);
-		return decryptedData;
+		const decryptedData = (await decryptedResponse.json()).decryptedValue;
+		const finalEncryptedData = decryptedData.split('-data-')[0];
+		const finalPrivateKey = atob(decryptedData.split('-data-')[1]);
+
+		const crypt = new JSEncrypt();
+		crypt.setPrivateKey(finalPrivateKey);
+		return crypt.decrypt(finalEncryptedData);
 	} catch (e) {
 		console.error('Error while getting sensitive value! ', e);
 	}

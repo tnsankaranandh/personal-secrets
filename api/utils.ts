@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const chalk = require("chalk");
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const JSEncrypt = require('jsencrypt');
+// const jwt = require('jsonwebtoken');
 const { put } = require("@vercel/blob");
 
 const connectDB: Function = async () => {
@@ -48,88 +50,36 @@ const decryptText: Function = async (text: any) => {
 const doubleEncryptionUtils: any = {
   generateRSAKeyPairs: () => {
     return new Promise(async (resolve, reject) => {
-      const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-        modulusLength: 2048, // Recommended key size
-        publicKeyEncoding: {
-          type: 'spki',
-          format: 'pem'
-        },
-        privateKeyEncoding: {
-          type: 'pkcs8',
-          format: 'pem'
-        }
+      const crypt = new JSEncrypt();
+      crypt.getKey(async () => {
+        const crypt = new JSEncrypt({ default_key_size: 2048 });
+        const privateKey = crypt.getPrivateKey();
+        const publicKey = crypt.getPublicKey();
+
+        const d: any = new Date();
+        const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
+        const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
+        const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+        resolve(publicKeyUrl + '-key-' + privateKeyUrl);
       });
-      const d: any = new Date();
-      const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
-      const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
-      const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
-      resolve(publicKeyUrl + '-key-' + privateKeyUrl);
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {
-    // try {
-    //   console.log(1);
-    //   const vercelBlobResponse = await fetch(keyUrls.split('-key-')[1]);
-    //   console.log(2);
-    //   let privateKey = await vercelBlobResponse.text();
-    //   console.log(3);
-
-    //   // Convert the hexadecimal string to a Buffer
-    //   // const encryptedBuffer = Buffer.from(doubleEncryptedString, 'hex');
-    //   const encryptedBuffer = new TextEncoder().encode(doubleEncryptedString);
-    //   console.log(4);
-
-    //   console.log('privateKey ', privateKey);
-    //   privateKey = crypto.createPrivateKey({
-    //     key: privateKey,
-    //     // format: 'pem',
-    //     // type: 'pkcs8', // Or 'pkcs1' depending on how your key is formatted
-    //     // If the private key is encrypted, you also need to provide a passphrase:
-    //     passphrase: 'your_strong_passphrase',
-    //   });
-    //   console.log('crypto private key ', privateKey);
-    //   // console.log('crypto.constants.RSA_PKCS1_PADDING ', crypto.constants.RSA_PKCS1_PADDING);
-    //   console.log('encryptedBuffer ', encryptedBuffer);
-    //   // Decrypt the data using the private key
-    //   const decryptedBuffer = crypto.privateDecrypt(
-    //     {
-    //       key: privateKey,
-    //       // passphrase: 'your_strong_passphrase',
-    //       // type: 'pkcs8',
-    //       // format: 'pem',
-    //       // cipher: 'aes-256-cbc',
-    //       // padding: crypto.constants.RSA_PKCS1_PADDING, // or RSA_NO_PADDING depending on encryption
-    //       // oaepHash: 'SHA1', // Example: if SHA-256 was used for OAEP
-    //     },
-    //     encryptedBuffer
-    //   );
-    //   console.log(5);
-
-    //   const doubleDecryptedString = decryptedBuffer.toString('utf8');
-    //   console.log(doubleDecryptedString, '   ---------------doubleDecryptedString');
-    //   return doubleDecryptedString;
-    // } catch (error) {
-    //   console.error('Decryption error:', error);
-    //   throw (error);
-    // }
-
     try {
-      console.log(1);
       const vercelBlobResponse = await fetch(keyUrls.split('-key-')[1]);
-      console.log(2);
-      let privateKey = await vercelBlobResponse.text();
-      console.log(3);
-      const buffer = Buffer.from(doubleEncryptedString, 'base64'); // Decode from base64
-      const decrypted = crypto.privateDecrypt(
-        {
-          key: privateKey,
-          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING // Same padding as encryption
-        },
-        buffer
-      );
-      const a = decrypted.toString('utf8');
-      console.log('__________-_______-_________ ', a);
-      return a;
+      const privateKey = await vercelBlobResponse.text();
+      const crypt = new JSEncrypt();
+      crypt.setPrivateKey(privateKey);
+      const finalDecryptedString = await decryptText(crypt.decrypt(doubleEncryptedString));
+
+      const finalCrypt = new JSEncrypt();
+      await finalCrypt.getKey();
+      const finalPrivateKey = finalCrypt.getPrivateKey();
+      const finalPublicKey = finalCrypt.getPublicKey();
+      finalCrypt.setPublicKey(finalPublicKey);
+      const finalData = finalCrypt.encrypt(finalDecryptedString);
+      const base64FinalPrivateKey = Buffer.from(finalPrivateKey, 'utf8').toString('base64');
+      return finalData + '-data-' + base64FinalPrivateKey;
     } catch (error) {
       console.error('Decryption error:', error);
       throw (error);
@@ -138,10 +88,24 @@ const doubleEncryptionUtils: any = {
   },
 };
 
+const decryptData: any = (encryptedBody: any) => {
+  try {
+    const actualData = encryptedBody.data?.split('-data-')?.[0];
+    const privateKey = Buffer.from(encryptedBody.data?.split('-data-')?.[1], 'base64').toString('utf8');
+    const crypt = new JSEncrypt();
+    crypt.setPrivateKey(privateKey);
+    return JSON.parse(crypt.decrypt(actualData));
+  } catch (e) {
+    console.error('Error while decrypting body: ', e);
+    throw e;
+  }
+};
+
 module.exports = {
   connectDB,
   getHashedPassword,
   encryptText,
   decryptText,
   doubleEncryptionUtils,
+  decryptData
 };

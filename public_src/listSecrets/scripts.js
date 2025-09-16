@@ -1,4 +1,4 @@
-const validateSession = () => {
+  const validateSession = () => {
 	if (!sessionStorage.getItem('UserSession')) {
 		window.location.href = '/login';
 		return false;
@@ -368,8 +368,8 @@ const getSensitiveFieldValue = async (fieldKey) => {
 		});
 		const encryptedData = await encryptedResponse.json();
 
-		const doubleEncryptedString = await doubleEncrypt(encryptedData.data);
-
+		const doubleEncryptedString = await doubleEncrypt(encryptedData.data, encryptedData.keyUrls);
+		console.log('doubleEncryptedString ', doubleEncryptedString);
 		const decryptedResponse = await fetch("/item/decrypt/", {
 			method: 'POST',
 			headers: {
@@ -377,9 +377,11 @@ const getSensitiveFieldValue = async (fieldKey) => {
 			},
 			body: JSON.stringify({
 				doubleEncryptedString,
+				keyUrls: encryptedData.keyUrls,
 			})
 		});
 		const decryptedData = await decryptedResponse.json();
+		console.log('decryptedData ', decryptedData);
 		return decryptedData;
 	} catch (e) {
 		console.error('Error while getting sensitive value! ', e);

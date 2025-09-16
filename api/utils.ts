@@ -47,39 +47,94 @@ const decryptText: Function = async (text: any) => {
 
 const doubleEncryptionUtils: any = {
   generateRSAKeyPairs: () => {
-    crypto.generateKeyPair('rsa', {
-      modulusLength: 4096, // Recommended length for strong RSA keys
-      publicKeyEncoding: {
-        type: 'spki', // Subject Public Key Info
-        format: 'pem' // Privacy-Enhanced Mail format
-      },
-      privateKeyEncoding: {
-        type: 'pkcs8', // PKCS #8 format
-        format: 'pem',
-        cipher: 'aes-256-cbc', // Encrypt the private key
-        passphrase: 'your_strong_passphrase' // Passphrase for private key encryption
-      }
-    }, async (err: any, publicKey: any, privateKey: any) => {
-      if (err) {
-        console.error('Error generating key pair:', err);
-        throw (err);
-        return;
-      }
-
+    return new Promise(async (resolve, reject) => {
+      const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 2048, // Recommended key size
+        publicKeyEncoding: {
+          type: 'spki',
+          format: 'pem'
+        },
+        privateKeyEncoding: {
+          type: 'pkcs8',
+          format: 'pem'
+        }
+      });
       const d: any = new Date();
       const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
-
-      console.log('Key pair generated successfully!');
-      console.log('PUBLIC KEY-----------------------');
-      console.log(publicKey);
-      console.log('PRIVATE KEY----------------------');
-      console.log(privateKey);
-
-      await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'private' });
-      await put(uniqueDateString + '/private_key.pem', publicKey, { access: 'private' });
-      console.log("Key pairs written to vercel blob storage!!!!!");
-
+      const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
+      const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+      resolve(publicKeyUrl + '-key-' + privateKeyUrl);
     });
+  },
+  decrypt: async (doubleEncryptedString: string, keyUrls: String) => {
+    // try {
+    //   console.log(1);
+    //   const vercelBlobResponse = await fetch(keyUrls.split('-key-')[1]);
+    //   console.log(2);
+    //   let privateKey = await vercelBlobResponse.text();
+    //   console.log(3);
+
+    //   // Convert the hexadecimal string to a Buffer
+    //   // const encryptedBuffer = Buffer.from(doubleEncryptedString, 'hex');
+    //   const encryptedBuffer = new TextEncoder().encode(doubleEncryptedString);
+    //   console.log(4);
+
+    //   console.log('privateKey ', privateKey);
+    //   privateKey = crypto.createPrivateKey({
+    //     key: privateKey,
+    //     // format: 'pem',
+    //     // type: 'pkcs8', // Or 'pkcs1' depending on how your key is formatted
+    //     // If the private key is encrypted, you also need to provide a passphrase:
+    //     passphrase: 'your_strong_passphrase',
+    //   });
+    //   console.log('crypto private key ', privateKey);
+    //   // console.log('crypto.constants.RSA_PKCS1_PADDING ', crypto.constants.RSA_PKCS1_PADDING);
+    //   console.log('encryptedBuffer ', encryptedBuffer);
+    //   // Decrypt the data using the private key
+    //   const decryptedBuffer = crypto.privateDecrypt(
+    //     {
+    //       key: privateKey,
+    //       // passphrase: 'your_strong_passphrase',
+    //       // type: 'pkcs8',
+    //       // format: 'pem',
+    //       // cipher: 'aes-256-cbc',
+    //       // padding: crypto.constants.RSA_PKCS1_PADDING, // or RSA_NO_PADDING depending on encryption
+    //       // oaepHash: 'SHA1', // Example: if SHA-256 was used for OAEP
+    //     },
+    //     encryptedBuffer
+    //   );
+    //   console.log(5);
+
+    //   const doubleDecryptedString = decryptedBuffer.toString('utf8');
+    //   console.log(doubleDecryptedString, '   ---------------doubleDecryptedString');
+    //   return doubleDecryptedString;
+    // } catch (error) {
+    //   console.error('Decryption error:', error);
+    //   throw (error);
+    // }
+
+    try {
+      console.log(1);
+      const vercelBlobResponse = await fetch(keyUrls.split('-key-')[1]);
+      console.log(2);
+      let privateKey = await vercelBlobResponse.text();
+      console.log(3);
+      const buffer = Buffer.from(doubleEncryptedString, 'base64'); // Decode from base64
+      const decrypted = crypto.privateDecrypt(
+        {
+          key: privateKey,
+          padding: crypto.constants.RSA_PKCS1_OAEP_PADDING // Same padding as encryption
+        },
+        buffer
+      );
+      const a = decrypted.toString('utf8');
+      console.log('__________-_______-_________ ', a);
+      return a;
+    } catch (error) {
+      console.error('Decryption error:', error);
+      throw (error);
+    }
+
   },
 };
 

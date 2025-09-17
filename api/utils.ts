@@ -45,6 +45,9 @@ const decryptText: Function = async (text: any) => {
   console.log(3);
   const encryptedData = parts.join(':');
   console.log(4);
+  console.log('algorithm', algorithm);
+  console.log('plaintext_bytes', plaintext_bytes);
+  console.log('ivFromEncrypted', ivFromEncrypted);
   const decipher = crypto.createDecipheriv(algorithm, plaintext_bytes, ivFromEncrypted);
   console.log(5);
   let decrypted = decipher.update(encryptedData, 'hex', 'utf8');

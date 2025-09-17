@@ -169,7 +169,7 @@ input::placeholder {
 
 @keyframes growFont {
     from { font-size: 1rem; }
-    to { font-size: 20rem; }
+    to { font-size: 1rem; }
 }
 
 .animator {
@@ -417,6 +417,7 @@ input:disabled {
 //# sourceMappingURL=/sm/1ab8f62f6a3d189d956124eb4d73bb2ce26a05111c539e162990c3b38cd85a02.map
 </script>
     <script src="https://cdn.jsdelivr.net/npm/jsencrypt@latest/bin/jsencrypt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-crypto-ec@1.0.7/dist/jscec.bundle.js"></script>
   </body>
 <script>
 const originalFetch = window.fetch;
@@ -514,19 +515,51 @@ const createBootstrapAlert = (message, type) => {
 };
 
 const doubleEncrypt = async (encryptedValue, keyUrls) => {
-	const publicKeyUrl = keyUrls?.split('-key-')[0];
-	const publicKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(publicKeyUrl));
-	const publicKeyData = await publicKeyResponse.json();
+	// const publicKeyUrl = keyUrls?.split('-key-')[0];
+	// const publicKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(publicKeyUrl));
+	// const publicKeyData = await publicKeyResponse.json();
 
-  	try {
-  		const crypt = new JSEncrypt();
-  		crypt.setPublicKey(publicKeyData.randomData);
-  		const doubleEncryptedString = crypt.encrypt(encryptedValue);
-        return doubleEncryptedString;
-    } catch (error) {
-        console.error("Encryption failed:", error);
-        throw error;
-    }
+  	// try {
+  	// 	const crypt = new JSEncrypt({ default_key_size: 4096 });
+  	// 	crypt.setPublicKey(publicKeyData.randomData);
+  	// 	const doubleEncryptedString = crypt.encrypt(encryptedValue);
+    //     return doubleEncryptedString;
+    // } catch (error) {
+    //     console.error("Encryption failed:", error);
+    //     throw error;
+    // }
+
+	console.log('window.jscec ', window.jscec);
+
+    const keyPair = await window.jscec.generateKey('P-256'); 
+    console.log(keyPair);
+    console.log(typeof keyPair.publicKey);
+    console.log(typeof keyPair.privateKey);
+
+    // const publicKeyJwk = await window.jscec.exportKey('jwk', keyPair.publicKey);
+    // const privateKeyJwk = await window.jscec.exportKey('jwk', keyPair.privateKey);
+
+    // console.log('publicKeyJwk ', publicKeyJwk, typeof publicKeyJwk);
+    // console.log('privateKeyJwk ', privateKeyJwk, typeof privateKeyJwk);
+
+    // Encrypt using the public key
+
+    // const encryptedData = await window.jscec.sign(
+    //     { name: 'ECDH-ES', namedCurve: 'P-256' }, 
+    //     keyPair.privateKey, 
+    //     new TextEncoder().encode(encryptedValue)
+    // );
+    const encryptedData = await window.jscec.sign(
+		encryptedValue,
+		keyPair.privateKey,
+		'SHA-256',
+		'raw' // output signature is not formatted. DER-encoded signature is available with 'der'.
+	);
+
+    console.log(encryptedData, ' : encryptedData');
+    const stringifiedEncryptedData = btoa(String.fromCharCode(...new Uint8Array(encryptedData)));
+    console.log(stringifiedEncryptedData, ' : stringifiedEncryptedData');
+    return stringifiedEncryptedData;
 };
 
 const getEncryptedDataWithPrivateKey = async data => {

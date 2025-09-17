@@ -3,7 +3,6 @@ const chalk = require("chalk");
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const JSEncrypt = require('jsencrypt');
-// const jwt = require('jsonwebtoken');
 const { put } = require("@vercel/blob");
 
 const connectDB: Function = async () => {
@@ -38,40 +37,33 @@ const encryptText: Function = async (text: any) => {
 };
 
 const decryptText: Function = async (text: any) => {
-  console.log(1);
   const parts = text.split(':');
-  console.log(2);
   const ivFromEncrypted = Buffer.from(parts.shift(), 'hex');
-  console.log(3);
   const encryptedData = parts.join(':');
-  console.log(4);
-  console.log('algorithm', algorithm);
-  console.log('plaintext_bytes', plaintext_bytes);
-  console.log('ivFromEncrypted', ivFromEncrypted);
   const decipher = crypto.createDecipheriv(algorithm, plaintext_bytes, ivFromEncrypted);
-  console.log(5);
   let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-  console.log(6);
   decrypted += decipher.final('utf8');
-  console.log(7);
   return decrypted;
 };
 
 const doubleEncryptionUtils: any = {
   generateRSAKeyPairs: () => {
     return new Promise(async (resolve, reject) => {
-      const crypt = new JSEncrypt();
-      crypt.getKey(async () => {
-        const crypt = new JSEncrypt({ default_key_size: 2048 });
-        const privateKey = crypt.getPrivateKey();
-        const publicKey = crypt.getPublicKey();
+      // const crypt = new JSEncrypt();
+      // crypt.getKey(async () => {
+      //   const crypt = new JSEncrypt({ default_key_size: 2048 });
+      //   const privateKey = crypt.getPrivateKey();
+      //   const publicKey = crypt.getPublicKey();
 
-        const d: any = new Date();
-        const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
-        const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
-        const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
-        resolve(publicKeyUrl + '-key-' + privateKeyUrl);
-      });
+      //   const d: any = new Date();
+      //   const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
+      //   const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
+      //   const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+      //   resolve(publicKeyUrl + '-key-' + privateKeyUrl);
+      // });
+
+      
+
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {

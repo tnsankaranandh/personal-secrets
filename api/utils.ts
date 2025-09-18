@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const chalk = require("chalk");
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const ec = require('js-crypto-ec');
 const JSEncrypt = require('jsencrypt');
 const { put } = require("@vercel/blob");
 
@@ -62,26 +63,43 @@ const doubleEncryptionUtils: any = {
       //   resolve(publicKeyUrl + '-key-' + privateKeyUrl);
       // });
 
-      
-
+      const keyPairs = await ec.generateKey('P-256');
+      const publicKey = JSON.stringify(keyPairs.publicKey);
+      const privateKey = JSON.stringify(keyPairs.privateKey);
+      const d: any = new Date();
+      const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
+      const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
+      const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+      resolve(publicKeyUrl + '-key-' + privateKeyUrl);
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {
     try {
-      const vercelBlobResponse = await fetch(keyUrls.split('-key-')[1]);
-      const privateKey = await vercelBlobResponse.text();
-      const crypt = new JSEncrypt();
-      crypt.setPrivateKey(privateKey);
-      const finalDecryptedString = await decryptText(crypt.decrypt(doubleEncryptedString));
+      // const vercelBlobResponse = await fetch(keyUrls.split('-key-')[1]);
+      // const privateKey = await vercelBlobResponse.text();
+      const vercelBlobResponse = await fetch(keyUrls.split('-key-')[0]);
+      const publicKey = JSON.parse(await vercelBlobResponse.text());
 
-      const finalCrypt = new JSEncrypt();
-      await finalCrypt.getKey();
-      const finalPrivateKey = finalCrypt.getPrivateKey();
-      const finalPublicKey = finalCrypt.getPublicKey();
-      finalCrypt.setPublicKey(finalPublicKey);
-      const finalData = finalCrypt.encrypt(finalDecryptedString);
-      const base64FinalPrivateKey = Buffer.from(finalPrivateKey, 'utf8').toString('base64');
-      return finalData + '-data-' + base64FinalPrivateKey;
+      // const crypt = new JSEncrypt();
+      // crypt.setPrivateKey(privateKey);
+      // const finalDecryptedString = await decryptText(crypt.decrypt(doubleEncryptedString));
+      // const finalCrypt = new JSEncrypt();
+      // await finalCrypt.getKey();
+      // const finalPrivateKey = finalCrypt.getPrivateKey();
+      // const finalPublicKey = finalCrypt.getPublicKey();
+      // finalCrypt.setPublicKey(finalPublicKey);
+      // const finalData = finalCrypt.encrypt(finalDecryptedString);
+      // const base64FinalPrivateKey = Buffer.from(finalPrivateKey, 'utf8').toString('base64');
+      // return finalData + '-data-' + base64FinalPrivateKey;
+
+      const encryptedData = await ec.verify(
+        Buffer.from(doubleEncryptedString.split('-data-')[0], 'utf8'),
+        Buffer.from(doubleEncryptedString.split('-data-')[1], 'utf8'),
+        publicKey,
+        'SHA-256',
+        'raw' // output signature is not formatted. DER-encoded signature is available with 'der'.
+      );
+      console.log('encryptedData: ', encryptedData);
     } catch (error) {
       console.error('Decryption error:', error);
       throw (error);
@@ -112,12 +130,12 @@ module.exports = {
   decryptData
 };
 
-async function logs() {
-console.log(
-  await doubleEncryptionUtils.decrypt(
-    'K4oJ5dxrY5EdRT0DP7qG+v1M2wyjB2I5iP6xJVLKW78tyvYaRSfbnBQnbU3K0HRwbw7qb8Kr4ovr742wdtnurBJCMeZPBu25kmOKK8mpZvV6I4raRDn2PTi664ZtNpjTFX0XZLinGLpxJKJvAkB4WWay/C2dZ3yx5iAE8UXAjBlQl1fkjH2vMacexipEb1IM6zaVTq2CyyjXgSiH8paSbmPLglVJSYjAaobsXjdje7KD8PnTOroV30c0m2J8oItnD8zeHHAuzE5xoMchs7d27wJ3OHqR1n2DMdix+yDc0v09WzjtYZp4J4ohNsi1Fnzhqfx0Xi0U03wrsUun3RDVJA==',
-    'https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/public_key.pem-key-https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/private_key.pem'
-  )
-);
-}
-logs();
+// async function logs() {
+// console.log(
+//   await doubleEncryptionUtils.decrypt(
+//     'K4oJ5dxrY5EdRT0DP7qG+v1M2wyjB2I5iP6xJVLKW78tyvYaRSfbnBQnbU3K0HRwbw7qb8Kr4ovr742wdtnurBJCMeZPBu25kmOKK8mpZvV6I4raRDn2PTi664ZtNpjTFX0XZLinGLpxJKJvAkB4WWay/C2dZ3yx5iAE8UXAjBlQl1fkjH2vMacexipEb1IM6zaVTq2CyyjXgSiH8paSbmPLglVJSYjAaobsXjdje7KD8PnTOroV30c0m2J8oItnD8zeHHAuzE5xoMchs7d27wJ3OHqR1n2DMdix+yDc0v09WzjtYZp4J4ohNsi1Fnzhqfx0Xi0U03wrsUun3RDVJA==',
+//     'https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/public_key.pem-key-https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/private_key.pem'
+//   )
+// );
+// }
+// logs();

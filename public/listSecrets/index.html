@@ -515,9 +515,13 @@ const createBootstrapAlert = (message, type) => {
 };
 
 const doubleEncrypt = async (encryptedValue, keyUrls) => {
-	// const publicKeyUrl = keyUrls?.split('-key-')[0];
-	// const publicKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(publicKeyUrl));
-	// const publicKeyData = await publicKeyResponse.json();
+	const publicKeyUrl = keyUrls?.split('-key-')[0];
+	const publicKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(publicKeyUrl));
+	const publicKeyData = await publicKeyResponse.json();
+
+	const privateKeyUrl = keyUrls?.split('-key-')[1];
+	const privateKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(privateKeyUrl));
+	const privateKeyData = await privateKeyResponse.json();
 
   	// try {
   	// 	const crypt = new JSEncrypt({ default_key_size: 4096 });
@@ -529,12 +533,6 @@ const doubleEncrypt = async (encryptedValue, keyUrls) => {
     //     throw error;
     // }
 
-	console.log('window.jscec ', window.jscec);
-
-    const keyPair = await window.jscec.generateKey('P-256'); 
-    console.log(keyPair);
-    console.log(typeof keyPair.publicKey);
-    console.log(typeof keyPair.privateKey);
 
     // const publicKeyJwk = await window.jscec.exportKey('jwk', keyPair.publicKey);
     // const privateKeyJwk = await window.jscec.exportKey('jwk', keyPair.privateKey);
@@ -544,22 +542,20 @@ const doubleEncrypt = async (encryptedValue, keyUrls) => {
 
     // Encrypt using the public key
 
-    // const encryptedData = await window.jscec.sign(
-    //     { name: 'ECDH-ES', namedCurve: 'P-256' }, 
-    //     keyPair.privateKey, 
-    //     new TextEncoder().encode(encryptedValue)
-    // );
-    const encryptedData = await window.jscec.sign(
+	const generatedKeys = await window.jscec.generateKey('P-256');
+	console.log(generatedKeys.privateKey);
+	console.log('privateKeyData.randomData ', privateKeyData.randomData);
+    const signature = await window.jscec.sign(
 		encryptedValue,
-		keyPair.privateKey,
+		JSON.parse(privateKeyData.randomData),
 		'SHA-256',
 		'raw' // output signature is not formatted. DER-encoded signature is available with 'der'.
 	);
 
-    console.log(encryptedData, ' : encryptedData');
-    const stringifiedEncryptedData = btoa(String.fromCharCode(...new Uint8Array(encryptedData)));
-    console.log(stringifiedEncryptedData, ' : stringifiedEncryptedData');
-    return stringifiedEncryptedData;
+    console.log(signature, ' : signature');
+    const stringifiedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
+    console.log(stringifiedSignature, ' : stringifiedSignature');
+    return btoa(encryptedValue) + '-data-' + stringifiedSignature;
 };
 
 const getEncryptedDataWithPrivateKey = async data => {

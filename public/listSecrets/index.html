@@ -515,47 +515,24 @@ const createBootstrapAlert = (message, type) => {
 };
 
 const doubleEncrypt = async (encryptedValue, keyUrls) => {
-	const publicKeyUrl = keyUrls?.split('-key-')[0];
-	const publicKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(publicKeyUrl));
-	const publicKeyData = await publicKeyResponse.json();
+	// const publicKeyUrl = keyUrls?.split('-key-')[0];
+	// const publicKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(publicKeyUrl));
+	// const publicKeyData = await publicKeyResponse.json();
 
 	const privateKeyUrl = keyUrls?.split('-key-')[1];
 	const privateKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(privateKeyUrl));
 	const privateKeyData = await privateKeyResponse.json();
 
-  	// try {
-  	// 	const crypt = new JSEncrypt({ default_key_size: 4096 });
-  	// 	crypt.setPublicKey(publicKeyData.randomData);
-  	// 	const doubleEncryptedString = crypt.encrypt(encryptedValue);
-    //     return doubleEncryptedString;
-    // } catch (error) {
-    //     console.error("Encryption failed:", error);
-    //     throw error;
-    // }
+    const message =  new TextEncoder().encode(encryptedValue);
 
-
-    // const publicKeyJwk = await window.jscec.exportKey('jwk', keyPair.publicKey);
-    // const privateKeyJwk = await window.jscec.exportKey('jwk', keyPair.privateKey);
-
-    // console.log('publicKeyJwk ', publicKeyJwk, typeof publicKeyJwk);
-    // console.log('privateKeyJwk ', privateKeyJwk, typeof privateKeyJwk);
-
-    // Encrypt using the public key
-
-	const generatedKeys = await window.jscec.generateKey('P-256');
-	console.log(generatedKeys.privateKey);
-	console.log('privateKeyData.randomData ', privateKeyData.randomData);
     const signature = await window.jscec.sign(
-		encryptedValue,
+		message,
 		JSON.parse(privateKeyData.randomData),
 		'SHA-256',
-		'raw' // output signature is not formatted. DER-encoded signature is available with 'der'.
-	);
+		'raw'
+	);		
 
-    console.log(signature, ' : signature');
-    const stringifiedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
-    console.log(stringifiedSignature, ' : stringifiedSignature');
-    return btoa(encryptedValue) + '-data-' + stringifiedSignature;
+    return message.toString() + '-data-' + signature.toString();
 };
 
 const getEncryptedDataWithPrivateKey = async data => {

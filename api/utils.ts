@@ -92,14 +92,20 @@ const doubleEncryptionUtils: any = {
       // const base64FinalPrivateKey = Buffer.from(finalPrivateKey, 'utf8').toString('base64');
       // return finalData + '-data-' + base64FinalPrivateKey;
 
+      const m = doubleEncryptedString.split('-data-')[0].split(',');
+      const s = doubleEncryptedString.split('-data-')[1].split(',');
+
       const encryptedData = await ec.verify(
-        Buffer.from(doubleEncryptedString.split('-data-')[0], 'utf8'),
-        Buffer.from(doubleEncryptedString.split('-data-')[1], 'utf8'),
+        m,
+        s,
         publicKey,
         'SHA-256',
-        'raw' // output signature is not formatted. DER-encoded signature is available with 'der'.
+        'raw'
       );
-      console.log('encryptedData: ', encryptedData);
+      if (encryptedData) {
+        const finalString = new TextDecoder('utf-8').decode(new Uint8Array(m.map(Number)));
+        console.log('finalString, ', finalString);
+      }
     } catch (error) {
       console.error('Decryption error:', error);
       throw (error);

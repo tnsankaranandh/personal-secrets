@@ -523,7 +523,10 @@ const doubleEncrypt = async (encryptedValue, keyUrls) => {
 	const privateKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(privateKeyUrl));
 	const privateKeyData = await privateKeyResponse.json();
 
-    const message =  new TextEncoder().encode(encryptedValue);
+	const now = new Date();
+	const currentTimeStamp = '' + now.getUTCFullYear() + now.getUTCMonth() + now.getUTCDate() + now.getUTCDay() + now.getUTCHours() + now.getUTCMinutes() + now.getUTCSeconds() + now.getUTCMilliseconds();
+
+    const message =  new TextEncoder().encode(encryptedValue + '----' +currentTimeStamp);
 
     const signature = await window.jscec.sign(
 		message,

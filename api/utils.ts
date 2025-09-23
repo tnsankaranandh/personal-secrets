@@ -95,6 +95,8 @@ const doubleEncryptionUtils: any = {
       const m = doubleEncryptedString.split('-data-')[0].split(',');
       const s = doubleEncryptedString.split('-data-')[1].split(',');
 
+      console.log('m ', m);
+
       const encryptedData = await ec.verify(
         m,
         s,

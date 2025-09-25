@@ -1,4 +1,4 @@
-  const validateSession = () => {
+const validateSession = () => {
 	if (!sessionStorage.getItem('UserSession')) {
 		window.location.href = '/login';
 		return false;
@@ -415,16 +415,46 @@ const getSensitiveFieldValue = async (fieldKey) => {
 				keyUrls: encryptedData.keyUrls,
 			})
 		});
-		const decryptedData = (await decryptedResponse.json()).decryptedValue;
-		const finalEncryptedData = decryptedData.split('-data-')[0];
-		const finalPrivateKey = atob(decryptedData.split('-data-')[1]);
-
-		const crypt = new JSEncrypt();
-		crypt.setPrivateKey(finalPrivateKey);
-		return crypt.decrypt(finalEncryptedData);
+		const decryptedData = (await decryptedResponse.json()).decryptedValue.split("")
+												    .filter((char, index) => index % 2 === 0)
+												    .join("");
+		const actualData = btoa(decryptedData.split(' ')[0]);
+		const timeStamp = btoa(decryptedData.split(' ')[1]);
+		if (_isDecryptionTimeStampValid(timeStamp.substring(1))) {
+			return actualData;
+		} else {
+			throw new Error('You can not decrypt this message now. Please try from the app again. Do not try from somewhere else. You will not be able to decrypt from somewhere else other than app!');
+		}
 	} catch (e) {
 		console.error('Error while getting sensitive value! ', e);
 	}
+};
+
+const _isDecryptionTimeStampValid = (timestamp) => {
+  const receivedYear = Number(timestamp.substring(0,4));
+  const receivedMonth = Number(timestamp.substring(4,6));
+  const receivedDate = Number(timestamp.substring(6,8));
+  const receivedHours = Number(timestamp.substring(8,10));
+  const receivedMinutes = Number(timestamp.substring(10,12));
+  const receivedSeconds = Number(timestamp.substring(12,14));
+
+
+  const currentDateObject = new Date();
+  const currentYear = currentDateObject.getUTCFullYear();
+  const currentMonth = currentDateObject.getUTCMonth() + 1;
+  const currentDate = currentDateObject.getUTCDate();
+  const currentHours = currentDateObject.getUTCHours();
+  const currentMinutes = currentDateObject.getUTCMinutes();
+  const currentSeconds = currentDateObject.getUTCSeconds();
+
+  return (
+    (currentYear - receivedYear) === 0 &&
+    (currentMonth - receivedMonth) === 0 &&
+    (currentDate - receivedDate) === 0 &&
+    (currentHours - receivedHours) === 0 &&
+    (currentMinutes - receivedMinutes) === 0 &&
+    (currentSeconds - receivedSeconds) <= 2
+  );
 };
 
 const showPassword = async () => {

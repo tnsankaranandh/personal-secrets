@@ -47,22 +47,36 @@ const decryptText: Function = async (text: any) => {
   return decrypted;
 };
 
+const _isDecryptionTimeStampValid: Function = (timestamp: string) => {
+  const receivedYear = Number(timestamp.substring(0,4));
+  const receivedMonth = Number(timestamp.substring(4,6));
+  const receivedDate = Number(timestamp.substring(6,8));
+  const receivedHours = Number(timestamp.substring(8,10));
+  const receivedMinutes = Number(timestamp.substring(10,12));
+  const receivedSeconds = Number(timestamp.substring(12,14));
+
+
+  const currentDateObject = new Date();
+  const currentYear = currentDateObject.getUTCFullYear();
+  const currentMonth = currentDateObject.getUTCMonth() + 1;
+  const currentDate = currentDateObject.getUTCDate();
+  const currentHours = currentDateObject.getUTCHours();
+  const currentMinutes = currentDateObject.getUTCMinutes();
+  const currentSeconds = currentDateObject.getUTCSeconds();
+
+  return (
+    (currentYear - receivedYear) === 0 &&
+    (currentMonth - receivedMonth) === 0 &&
+    (currentDate - receivedDate) === 0 &&
+    (currentHours - receivedHours) === 0 &&
+    (currentMinutes - receivedMinutes) === 0 &&
+    (currentSeconds - receivedSeconds) <= 2
+  );
+};
+
 const doubleEncryptionUtils: any = {
   generateRSAKeyPairs: () => {
     return new Promise(async (resolve, reject) => {
-      // const crypt = new JSEncrypt();
-      // crypt.getKey(async () => {
-      //   const crypt = new JSEncrypt({ default_key_size: 2048 });
-      //   const privateKey = crypt.getPrivateKey();
-      //   const publicKey = crypt.getPublicKey();
-
-      //   const d: any = new Date();
-      //   const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
-      //   const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
-      //   const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
-      //   resolve(publicKeyUrl + '-key-' + privateKeyUrl);
-      // });
-
       const keyPairs = await ec.generateKey('P-256');
       const publicKey = JSON.stringify(keyPairs.publicKey);
       const privateKey = JSON.stringify(keyPairs.privateKey);
@@ -75,22 +89,8 @@ const doubleEncryptionUtils: any = {
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {
     try {
-      // const vercelBlobResponse = await fetch(keyUrls.split('-key-')[1]);
-      // const privateKey = await vercelBlobResponse.text();
       const vercelBlobResponse = await fetch(keyUrls.split('-key-')[0]);
       const publicKey = JSON.parse(await vercelBlobResponse.text());
-
-      // const crypt = new JSEncrypt();
-      // crypt.setPrivateKey(privateKey);
-      // const finalDecryptedString = await decryptText(crypt.decrypt(doubleEncryptedString));
-      // const finalCrypt = new JSEncrypt();
-      // await finalCrypt.getKey();
-      // const finalPrivateKey = finalCrypt.getPrivateKey();
-      // const finalPublicKey = finalCrypt.getPublicKey();
-      // finalCrypt.setPublicKey(finalPublicKey);
-      // const finalData = finalCrypt.encrypt(finalDecryptedString);
-      // const base64FinalPrivateKey = Buffer.from(finalPrivateKey, 'utf8').toString('base64');
-      // return finalData + '-data-' + base64FinalPrivateKey;
 
       const m = doubleEncryptedString.split('-data-')[0].split(',');
       const s = doubleEncryptedString.split('-data-')[1].split(',');
@@ -104,16 +104,50 @@ const doubleEncryptionUtils: any = {
         'SHA-256',
         'raw'
       );
+
       if (encryptedData) {
         const finalString = new TextDecoder('utf-8').decode(new Uint8Array(m.map(Number)));
-        console.log('finalString, ', finalString);
+        const actualValue = finalString.split('----')[0];
+        const timeStamp = finalString.split('----')[1];
+        if (_isDecryptionTimeStampValid(timeStamp)) {
+          return _finalEncryption(await decryptText(actualValue));
+        } else {
+          throw new Error('You can not decrypt this message now. Please try from the app again. Do not try from somewhere else. You will not be able to decrypt from somewhere else other than app!');
+        }
       }
     } catch (error) {
       console.error('Decryption error:', error);
       throw (error);
     }
-
   },
+};
+
+const _getCurrentUTCTimeStamp = () => {
+  const date = new Date();
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+
+  return `s${year}${month}${day}${hours}${minutes}${seconds}t`;
+};
+
+const _finalEncryption: Function = (decryptedText: string) => {
+  const base64Value = atob(decryptedText) + ' ' + atob(_getCurrentUTCTimeStamp());
+  console.log('value in ui should be : ', base64Value);
+  const base64ValueLength = base64Value.length;
+
+  let finalSensitiveValue = "";
+  const possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%^&*()_+=[{]};:',<.>/?\\|`~ ";
+  for (let i = 0; i < base64ValueLength; i++) {
+    finalSensitiveValue += base64Value[i];
+
+    const randomIndex = Math.floor(Math.random() * possibleChars.length);
+    finalSensitiveValue += possibleChars[randomIndex];
+  }
+  return finalSensitiveValue;
 };
 
 const decryptData: any = (encryptedBody: any) => {
@@ -137,13 +171,3 @@ module.exports = {
   doubleEncryptionUtils,
   decryptData
 };
-
-// async function logs() {
-// console.log(
-//   await doubleEncryptionUtils.decrypt(
-//     'K4oJ5dxrY5EdRT0DP7qG+v1M2wyjB2I5iP6xJVLKW78tyvYaRSfbnBQnbU3K0HRwbw7qb8Kr4ovr742wdtnurBJCMeZPBu25kmOKK8mpZvV6I4raRDn2PTi664ZtNpjTFX0XZLinGLpxJKJvAkB4WWay/C2dZ3yx5iAE8UXAjBlQl1fkjH2vMacexipEb1IM6zaVTq2CyyjXgSiH8paSbmPLglVJSYjAaobsXjdje7KD8PnTOroV30c0m2J8oItnD8zeHHAuzE5xoMchs7d27wJ3OHqR1n2DMdix+yDc0v09WzjtYZp4J4ohNsi1Fnzhqfx0Xi0U03wrsUun3RDVJA==',
-//     'https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/public_key.pem-key-https://brscghbip0naojzk.public.blob.vercel-storage.com/125816103038654/private_key.pem'
-//   )
-// );
-// }
-// logs();

@@ -137,7 +137,7 @@ const decrypt: any = async (req: any, res: any, next: any) => {
     const doubleDecryptedString: String = await doubleEncryptionUtils.decrypt(doubleEncryptedString, keyUrls);
     res.send({
       decryptedValue: doubleDecryptedString,
-    });
+    });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
   } catch (e) {
     console.log(
       'Error while getting secured item!',

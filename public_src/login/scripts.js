@@ -39,5 +39,7 @@ window.addEventListener('pageshow', () => {
 	const isInvalidSession = urlParams.get('invalidSession');
 	if (isInvalidSession === 'true') {
 		createBootstrapAlert("Invalid Session! Please login again.", "danger");
+	} else if (_hasValidSession()) {
+		window.location.href = '/listSecrets';
 	}
 });

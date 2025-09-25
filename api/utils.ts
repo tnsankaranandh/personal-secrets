@@ -6,6 +6,11 @@ const ec = require('js-crypto-ec');
 const JSEncrypt = require('jsencrypt');
 const { put } = require("@vercel/blob");
 
+const { google } = require('googleapis');
+const path = require('path');
+const fs = require('fs');
+
+
 const connectDB: Function = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -74,6 +79,29 @@ const _isDecryptionTimeStampValid: Function = (timestamp: string) => {
   );
 };
 
+const uploadFile: Function = async (drive: any, filePath: String, fileName: String, folderId: String) => {
+    try {
+        const fileMetadata = {
+            name: fileName,
+            parents: [folderId],
+            mimeType: 'text/plain',
+        };
+        const media = {
+            mimeType: 'text/plain',
+            body: fs.createReadStream(filePath),
+        };
+        const response = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: 'id,name',
+        });
+        console.log('File uploaded:', response.data);
+        return response.data.id;
+    } catch (error) {
+        console.error('Error uploading file:', error);
+    }
+}
+
 const doubleEncryptionUtils: any = {
   generateRSAKeyPairs: () => {
     return new Promise(async (resolve, reject) => {
@@ -82,8 +110,26 @@ const doubleEncryptionUtils: any = {
       const privateKey = JSON.stringify(keyPairs.privateKey);
       const d: any = new Date();
       const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
-      const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
-      const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+      
+      // const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
+      // const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+
+
+
+
+      const KEYFILEPATH = path.join(__dirname, '/personal-secrets-gapi-service-account-key.json'); // Replace with your key file path
+      const SCOPES = ['https://www.googleapis.com/auth/drive'];
+
+      const auth = new google.auth.GoogleAuth({
+          keyFile: KEYFILEPATH,
+          scopes: SCOPES,
+      });
+
+      const drive = google.drive({ version: 'v3', auth });
+      const fileUploaded = await uploadFile(drive, '', );
+
+
+
       resolve(publicKeyUrl + '-key-' + privateKeyUrl);
     });
   },

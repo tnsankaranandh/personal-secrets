@@ -4,13 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const ec = require('js-crypto-ec');
 const JSEncrypt = require('jsencrypt');
-// const { put } = require("@vercel/blob");
-
-const { google } = require('googleapis');
-// const path = require('path');
-// const fs = require('fs');
-const { Readable } = require('stream');
-
+const { put } = require("@vercel/blob");
 
 const connectDB: Function = async () => {
   try {
@@ -80,36 +74,6 @@ const _isDecryptionTimeStampValid: Function = (timestamp: string) => {
   );
 };
 
-const createReadableStreamFromString: Function = (stringContent: String) => {
-  const readableStream = new Readable();
-  readableStream.push(stringContent);
-  readableStream.push(null);
-  return readableStream;
-};
-
-const uploadFile: Function = async (drive: any, fileContent: String, fileName: String, folderId: String) => {
-    try {
-        const fileMetadata = {
-            name: fileName,
-            parents: [folderId],
-            mimeType: 'text/plain',
-        };
-        const media = {
-            mimeType: 'text/plain',
-            body: createReadableStreamFromString(fileContent),
-        };
-        const response = await drive.files.create({
-            resource: fileMetadata,
-            media: media,
-            fields: 'id,name',
-        });
-        console.log('File uploaded:', response.data);
-        return response.data.id;
-    } catch (error) {
-        console.error('Error uploading file:', error);
-    }
-}
-
 const doubleEncryptionUtils: any = {
   generateRSAKeyPairs: () => {
     return new Promise(async (resolve, reject) => {
@@ -119,33 +83,10 @@ const doubleEncryptionUtils: any = {
       const d: any = new Date();
       const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
       
-      // const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
-      // const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+      const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
+      const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
 
-      console.log('privateKey ', privateKey);
-
-
-      console.log('process.env.GDRIVE_SERVICE_ACCOUNT_JSON');
-      console.log(process.env.GDRIVE_SERVICE_ACCOUNT_JSON);
-      const serviceAccountKeyJson = JSON.parse(Buffer.from(process.env.GDRIVE_SERVICE_ACCOUNT_JSON, 'base64').toString('utf8'));
-      console.log(serviceAccountKeyJson, ': serviceAccountKeyJson');
-
-      // const KEYFILEPATH = path.join(__dirname, '/personal-secrets-gapi-service-account-key.json'); // Replace with your key file path
-      const SCOPES = ['https://www.googleapis.com/auth/drive'];
-
-      const auth = new google.auth.GoogleAuth({
-          // keyFile: KEYFILEPATH,
-          credentials: serviceAccountKeyJson,
-          scopes: SCOPES,
-      });
-
-      const drive = google.drive({ version: 'v3', auth });
-      const fileUploaded = await uploadFile(drive, publicKey, `${uniqueDateString}_public_key.pem`, '1wbJnIGE7FovFtagfz51SXC61_IxW3XpU');
-      console.log('publicKey file uploaded', fileUploaded);
-      console.log('publicKey ', publicKey);
-
-
-      // resolve(publicKeyUrl + '-key-' + privateKeyUrl);
+      resolve(publicKeyUrl + '-key-' + privateKeyUrl);
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {

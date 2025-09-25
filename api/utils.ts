@@ -9,7 +9,7 @@ const { put } = require("@vercel/blob");
 const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
-const {  } = require('stream');
+const { Readable } = require('stream');
 
 
 const connectDB: Function = async () => {
@@ -80,7 +80,14 @@ const _isDecryptionTimeStampValid: Function = (timestamp: string) => {
   );
 };
 
-const uploadFile: Function = async (drive: any, filePath: String, fileName: String, folderId: String) => {
+const createReadableStreamFromString: Function = (stringContent:) => {
+  const readableStream = new Readable();
+  readableStream.push(stringContent);
+  readableStream.push(null);
+  return readableStream;
+};
+
+const uploadFile: Function = async (drive: any, fileContent: String, fileName: String, folderId: String) => {
     try {
         const fileMetadata = {
             name: fileName,
@@ -89,7 +96,7 @@ const uploadFile: Function = async (drive: any, filePath: String, fileName: Stri
         };
         const media = {
             mimeType: 'text/plain',
-            body: fs.createReadStream(filePath),
+            body: createReadableStreamFromString(fileContent),
         };
         const response = await drive.files.create({
             resource: fileMetadata,
@@ -127,11 +134,11 @@ const doubleEncryptionUtils: any = {
       });
 
       const drive = google.drive({ version: 'v3', auth });
-      const fileUploaded = await uploadFile(drive, '', );
+      const fileUploaded = await uploadFile(drive, publicKey, `${uniqueDateString}_public_key.pem`, '1wbJnIGE7FovFtagfz51SXC61_IxW3XpU');
+      console.log('publicKey file uploaded', fileUploaded);
 
 
-
-      resolve(publicKeyUrl + '-key-' + privateKeyUrl);
+      // resolve(publicKeyUrl + '-key-' + privateKeyUrl);
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {

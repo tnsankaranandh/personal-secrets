@@ -99,11 +99,10 @@ const getSecuredFieldValue: any = async (req: any, res: any, next: any) => {
       encryptedData = encryptedData[sf];
     });
 
-    const keyUrls = await doubleEncryptionUtils.generateRSAKeyPairs();
+    await doubleEncryptionUtils.generateRSAKeyPairs();
 
     res.send({
-      data: encryptedData,
-      keyUrls,
+      data: encryptedData
     });
   } catch (e) {
     console.log(

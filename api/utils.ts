@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const ec = require('js-crypto-ec');
 const JSEncrypt = require('jsencrypt');
 // const { put } = require("@vercel/blob");
+const sanityClient = require('@sanity/client');
 
 const connectDB: Function = async () => {
   try {
@@ -86,7 +87,7 @@ const doubleEncryptionUtils: any = {
       // const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
       // const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
 
-      const sanityUpdateObject = {
+      /*const sanityUpdateObject = {
         "mutations": [
           {
             "patch": {
@@ -111,8 +112,32 @@ const doubleEncryptionUtils: any = {
       const sanityJSONResponse: any = await sanityCMSResponse.json();
       if (sanityJSONResponse.error) {
         return reject(sanityJSONResponse.error);
+      }*/
+
+      const client = sanityClient({
+        projectId: 'cdedbo4r',
+        dataset: 'personal-secrets',
+        apiVersion: '2025-10-06', // Use a specific API version
+        token: process.env.SANITY_TOKEN, // Ensure this token has write access
+        useCdn: false, // Set to true for read-only operations
+      });
+
+      const doc = {
+        _id: 'private.key',
+        _type: 'keyDocuments',
+        name: 'tempData',
+        privateKey,
+        publicKey,
+      };
+
+      try {
+        const result = await client.create(doc);
+        console.log('Document created:', result);
+        resolve('');
+      } catch (e) {
+        console.log('Error while creating document in sanity: ', e);
+        reject(e);
       }
-      resolve('success');
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {

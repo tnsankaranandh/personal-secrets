@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const ec = require('js-crypto-ec');
 const JSEncrypt = require('jsencrypt');
-const { put } = require("@vercel/blob");
+// const { put } = require("@vercel/blob");
 
 const connectDB: Function = async () => {
   try {
@@ -80,13 +80,39 @@ const doubleEncryptionUtils: any = {
       const keyPairs = await ec.generateKey('P-256');
       const publicKey = JSON.stringify(keyPairs.publicKey);
       const privateKey = JSON.stringify(keyPairs.privateKey);
-      const d: any = new Date();
-      const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
+      // const d: any = new Date();
+      // const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
       
-      const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
-      const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
+      // const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
+      // const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
 
-      resolve(publicKeyUrl + '-key-' + privateKeyUrl);
+      const sanityUpdateObject = {
+        "mutations": [
+          {
+            "patch": {
+              "id": process.env.SANITY_ENTRY_UID,
+              "set": {
+                "privateKey": privateKey,
+                "publicKey": publicKey,
+              }
+            }
+          },
+        ]
+      };
+
+      const sanityCMSResponse = await fetch(process.env.SANITY_MUTATE_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.SANITY_TOKEN}`,
+        },
+        body: JSON.stringify(sanityUpdateObject),
+      });
+      const sanityJSONResponse: any = await sanityCMSResponse.json();
+      if (sanityJSONResponse.error) {
+        return reject(sanityJSONResponse.error);
+      }
+      resolve('success');
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {

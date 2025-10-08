@@ -404,7 +404,7 @@ const getSensitiveFieldValue = async (fieldKey) => {
 		});
 		const encryptedData = await encryptedResponse.json();
 
-		const doubleEncryptedString = await doubleEncrypt(encryptedData.data, encryptedData.keyUrls);
+		const doubleEncryptedString = await doubleEncrypt(encryptedData.data, encryptedData.randomUid);
 		const decryptedResponse = await fetch("/item/decrypt/", {
 			method: 'POST',
 			headers: {
@@ -412,7 +412,7 @@ const getSensitiveFieldValue = async (fieldKey) => {
 			},
 			body: JSON.stringify({
 				doubleEncryptedString,
-				keyUrls: encryptedData.keyUrls,
+				randomUid: encryptedData.randomUid
 			})
 		});
 		const decryptedData = (await decryptedResponse.json()).decryptedValue.split("")

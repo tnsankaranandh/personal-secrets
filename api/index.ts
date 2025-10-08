@@ -96,7 +96,6 @@ app.get('/user/:userUid', validateSessionFilter, connectDBFilter, UserAPI.detail
 app.put('/user/update', validateSessionFilter, connectDBFilter, UserAPI.update);
 
 app.post('/item/getSecuredFieldValue', validateSessionFilter, connectDBFilter, ItemAPI.getSecuredFieldValue);
-app.get('/unknownApi', validateSessionFilter, connectDBFilter, ItemAPI.unkownApi);
 app.post('/item/decrypt', validateSessionFilter, connectDBFilter, ItemAPI.decrypt);
 
 

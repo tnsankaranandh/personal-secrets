@@ -99,10 +99,9 @@ const getSecuredFieldValue: any = async (req: any, res: any, next: any) => {
       encryptedData = encryptedData[sf];
     });
 
-    await doubleEncryptionUtils.generateRSAKeyPairs();
-
     res.send({
-      data: encryptedData
+      data: encryptedData,
+      randomUid: await doubleEncryptionUtils.generateRSAKeyPairs(),
     });
   } catch (e) {
     console.log(
@@ -113,27 +112,10 @@ const getSecuredFieldValue: any = async (req: any, res: any, next: any) => {
   }
 };
 
-const unkownApi: any = async (req: any, res: any, next: any) => {
-  try {
-    // const { randomValue } = req.query;
-    // const vercelBlobResponse = await fetch(randomValue);
-    // const vercelBlobData = await vercelBlobResponse.text();
-    // res.send({
-    //   randomData: vercelBlobData,
-    // });
-  } catch (e) {
-    console.log(
-      'Error while getting vercel blob item!',
-      chalk.red('✗')
-    );
-    next(e);
-  }
-};
-
 const decrypt: any = async (req: any, res: any, next: any) => {
   try {
-    const { doubleEncryptedString, keyUrls } = req.body;
-    const doubleDecryptedString: String = await doubleEncryptionUtils.decrypt(doubleEncryptedString, keyUrls);
+    const { doubleEncryptedString, randomUid } = req.body;
+    const doubleDecryptedString: String = await doubleEncryptionUtils.decrypt(doubleEncryptedString, randomUid);
     res.send({
       decryptedValue: doubleDecryptedString,
     });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
@@ -153,6 +135,5 @@ module.exports = {
   update,
   deleteItem,
   getSecuredFieldValue,
-  unkownApi,
   decrypt,
 };

@@ -3,7 +3,8 @@
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"lib": [
-			"ES6"
+			"ES6",
+			"ES2021.String"
 		],
 		"moduleDetection": "force",
 		"module": "commonjs",

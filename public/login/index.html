@@ -378,21 +378,24 @@ const _getCurrentUTCTimeStamp = () => {
 	return `${year}${month}${day}${hours}${minutes}${seconds}`;
 };
 
-const doubleEncrypt = async (encryptedValue, keyUrls) => {
-	const privateKeyUrl = keyUrls?.split('-key-')[1];
-	const privateKeyResponse = await fetch('/unknownApi?randomValue=' + encodeURIComponent(privateKeyUrl));
-	const privateKeyData = await privateKeyResponse.json();
-
+const doubleEncrypt = async (encryptedValue, sanityDocUid) => {
+  	const readClient = SanityClient.createClient({
+      projectId: 'cdedbo4r',
+      dataset: 'personal-secrets',
+      apiVersion: '2025-10-06', // Use a specific API version
+      token: "skWfePsl2FqxhND8YMojWoVDxs8QIP7o0FqESJ2wSinRUiD7t0HtzBhMPgMuJctDwPiHsZTbMy7MMwo77iTtFJH5qCy0ahctdGj60OCFg2ERAv4YjqNP2S6kzt8mEkO1wMdm9rUqOSJKocR9prkcYfiQ6MK72jZXr4eLIGGyCyGz6mncugxL",
+      perspective: 'raw',
+    });
+    const query = `*[_id == "${sanityDocUid}"]`;
+    const privateDocuments = await readClient.fetch(query);
     const message =  new TextEncoder().encode(encryptedValue + '----' + _getCurrentUTCTimeStamp());
-
     const signature = await window.jscec.sign(
 		message,
-		JSON.parse(privateKeyData.randomData),
+		JSON.parse(privateDocuments?.[0]?.privateKey),
 		'SHA-256',
 		'raw'
 	);		
-
-    return message.toString() + '-data-' + signature.toString();
+    return btoa(message.toString().replaceAll(",", "a")) + '-data-' + btoa(signature.toString().replaceAll(",", "a"));
 };
 
 const getEncryptedDataWithPrivateKey = async data => {
@@ -405,7 +408,7 @@ const getEncryptedDataWithPrivateKey = async data => {
 	const encryptedData = crypt.encrypt(stringifiedData);
 	return {
 		data: encryptedData + '-data-' + btoa(privateKey),
-	}
+	};
 };
 
 </script>

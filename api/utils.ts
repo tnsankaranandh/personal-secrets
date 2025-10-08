@@ -81,98 +81,41 @@ const doubleEncryptionUtils: any = {
       const keyPairs = await ec.generateKey('P-256');
       const publicKey = JSON.stringify(keyPairs.publicKey);
       const privateKey = JSON.stringify(keyPairs.privateKey);
-      // const d: any = new Date();
-      // const uniqueDateString: String = '' + d.getYear() + d.getMonth() + d.getDate() + d.getHours() + d.getMinutes() + d.getSeconds() + d.getMilliseconds();
-      
-      // const { url: publicKeyUrl } = await put(uniqueDateString + '/public_key.pem', publicKey, { access: 'public' });
-      // const { url: privateKeyUrl } = await put(uniqueDateString + '/private_key.pem', privateKey, { access: 'public' });
-
-      /*const sanityUpdateObject = {
-        "mutations": [
-          {
-            "patch": {
-              "id": process.env.SANITY_ENTRY_UID,
-              "set": {
-                "privateKey": privateKey,
-                "publicKey": publicKey,
-              }
-            }
-          },
-        ]
-      };
-
-      const sanityCMSResponse = await fetch(process.env.SANITY_MUTATE_BASE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SANITY_TOKEN}`,
-        },
-        body: JSON.stringify(sanityUpdateObject),
-      });
-      const sanityJSONResponse: any = await sanityCMSResponse.json();
-      if (sanityJSONResponse.error) {
-        return reject(sanityJSONResponse.error);
-      }*/
-
-      console.log('sanityClient');
-      console.log(sanityClient);
       const client = sanityClient.createClient({
         projectId: 'cdedbo4r',
         dataset: 'personal-secrets',
-        apiVersion: '2025-10-06', // Use a specific API version
-        token: process.env.SANITY_TOKEN, // Ensure this token has write access
-        useCdn: false, // Set to true for read-only operations
+        apiVersion: '2025-10-06',
+        token: process.env.SANITY_TOKEN,
+        useCdn: false,
       });
 
+      const newDocId = 'private.key'+(Math.random().toString().replace('.',''));
       const doc = {
-        _id: 'private.key'+(Math.random().toString().replace('.','')),
+        _id: newDocId,
         _type: 'keys',
         name: 'tempData',
         privateKey,
         publicKey,
       };
-
-      try {
-          const result = await client.create(doc);
-          console.log('Document created:', result);
-        resolve('');
-
-
-        const readClient = sanityClient.createClient({
-          projectId: 'cdedbo4r',
-          dataset: 'personal-secrets',
-          apiVersion: '2025-10-06', // Use a specific API version
-          token: process.env.viewer, // Ensure this token has write access
-          // token: process.env.editor, // Ensure this token has write access
-          // token: process.env.developer, // Ensure this token has write access
-          // token: process.env.deploy, // Ensure this token has write access
-          // token: process.env.contributor, // Ensure this token has write access
-          useCdn: false, // Set to true for read-only operations
-          perspective: 'raw',
-        });
-        const query = `*[_type == "keys"]`; // Example query for documents of type 'privateDocument'
-        const privateDocuments = await readClient.fetch(query);
-        console.log('Private Documents:', privateDocuments);
-
-      } catch (e) {
-        console.log('Error while creating document in sanity: ', e);
-        reject(e);
-      }
-
-
-
-
+      await client.create(doc);
+      resolve(newDocId);
     });
   },
-  decrypt: async (doubleEncryptedString: string, keyUrls: String) => {
+  decrypt: async (doubleEncryptedString: string, sanityDocUid: String) => {
     try {
-      const vercelBlobResponse = await fetch(keyUrls.split('-key-')[0]);
-      const publicKey = JSON.parse(await vercelBlobResponse.text());
+      const readClient = sanityClient.createClient({
+        projectId: 'cdedbo4r',
+        dataset: 'personal-secrets',
+        apiVersion: '2025-10-06',
+        token: process.env.SANITY_TOKEN,
+        perspective: 'raw',
+      });
+      const query = `*[_id == "${sanityDocUid}"]`;
+      const privateDocuments = await readClient.fetch(query);
+      const publicKey = JSON.parse(privateDocuments?.[0]?.publicKey);
 
-      const m = doubleEncryptedString.split('-data-')[0].split(',');
-      const s = doubleEncryptedString.split('-data-')[1].split(',');
-
-      console.log('m ', m);
+      const m = atob(doubleEncryptedString.split('-data-')[0]).replaceAll("a", ",").split(',');
+      const s = atob(doubleEncryptedString.split('-data-')[1]).replaceAll("a", ",").split(',');
 
       const encryptedData = await ec.verify(
         m,
@@ -187,10 +130,13 @@ const doubleEncryptionUtils: any = {
         const actualValue = finalString.split('----')[0];
         const timeStamp = finalString.split('----')[1];
         if (_isDecryptionTimeStampValid(timeStamp)) {
+          _deleteAllDocumentsByType("keys");
           return _finalEncryption(await decryptText(actualValue));
         } else {
-          throw new Error('You can not decrypt this message now. Please try from the app again. Do not try from somewhere else. You will not be able to decrypt from somewhere else other than app!');
+          throw new Error('You can not decrypt this message now. Please try from the app again. Do not try from somewhere else. You will not be able to decrypt from somewhere else other than app! If you are someone else who are trying to access our secrets, then get lost. You can not do it!');
         }
+      } else {
+        throw new Error('You are trying to fake the signature in the message! Do not do this, you will never be able to access our secrets! Get lost and do some useful work.');
       }
     } catch (error) {
       console.error('Decryption error:', error);
@@ -239,6 +185,39 @@ const decryptData: any = (encryptedBody: any) => {
     throw e;
   }
 };
+
+const _deleteAllDocumentsByType: any = async (type: string) => {
+  try {
+    const client = sanityClient.createClient({
+      projectId: 'cdedbo4r',
+      dataset: 'personal-secrets',
+      apiVersion: '2025-10-06',
+      token: process.env.SANITY_TOKEN,
+      useCdn: false,
+      perspective: 'raw',
+    });
+
+    const documentIds = await client.fetch(`*[_type == "${type}"]._id`);
+
+    if (documentIds.length === 0) {
+      console.log(`No documents of type "${type}" found to delete.`);
+      return;
+    }
+
+    const mutations = documentIds.map((id: string) => ({
+      delete: {
+        id,
+      },
+    }));
+    
+    await client.mutate(mutations);
+    console.log(`Successfully deleted ${documentIds.length} documents of type "${type}".`);
+
+  } catch (error) {
+    console.error('Error deleting documents:', error.message);
+  }
+}
+
 
 module.exports = {
   connectDB,

@@ -114,7 +114,9 @@ const doubleEncryptionUtils: any = {
         return reject(sanityJSONResponse.error);
       }*/
 
-      const client = sanityClient({
+      console.log('sanityClient');
+      console.log(sanityClient);
+      const client = sanityClient.createClient({
         projectId: 'cdedbo4r',
         dataset: 'personal-secrets',
         apiVersion: '2025-10-06', // Use a specific API version
@@ -123,21 +125,43 @@ const doubleEncryptionUtils: any = {
       });
 
       const doc = {
-        _id: 'private.key',
-        _type: 'keyDocuments',
+        _id: 'private.key'+(Math.random().toString().replace('.','')),
+        _type: 'keys',
         name: 'tempData',
         privateKey,
         publicKey,
       };
 
       try {
-        const result = await client.create(doc);
-        console.log('Document created:', result);
+          const result = await client.create(doc);
+          console.log('Document created:', result);
         resolve('');
+
+
+        const readClient = sanityClient.createClient({
+          projectId: 'cdedbo4r',
+          dataset: 'personal-secrets',
+          apiVersion: '2025-10-06', // Use a specific API version
+          token: process.env.viewer, // Ensure this token has write access
+          // token: process.env.editor, // Ensure this token has write access
+          // token: process.env.developer, // Ensure this token has write access
+          // token: process.env.deploy, // Ensure this token has write access
+          // token: process.env.contributor, // Ensure this token has write access
+          useCdn: false, // Set to true for read-only operations
+          perspective: 'raw',
+        });
+        const query = `*[_type == "keys"]`; // Example query for documents of type 'privateDocument'
+        const privateDocuments = await readClient.fetch(query);
+        console.log('Private Documents:', privateDocuments);
+
       } catch (e) {
         console.log('Error while creating document in sanity: ', e);
         reject(e);
       }
+
+
+
+
     });
   },
   decrypt: async (doubleEncryptedString: string, keyUrls: String) => {

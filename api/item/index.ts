@@ -115,12 +115,12 @@ const getSecuredFieldValue: any = async (req: any, res: any, next: any) => {
 
 const unkownApi: any = async (req: any, res: any, next: any) => {
   try {
-    const { randomValue } = req.query;
-    const vercelBlobResponse = await fetch(randomValue);
-    const vercelBlobData = await vercelBlobResponse.text();
-    res.send({
-      randomData: vercelBlobData,
-    });
+    // const { randomValue } = req.query;
+    // const vercelBlobResponse = await fetch(randomValue);
+    // const vercelBlobData = await vercelBlobResponse.text();
+    // res.send({
+    //   randomData: vercelBlobData,
+    // });
   } catch (e) {
     console.log(
       'Error while getting vercel blob item!',

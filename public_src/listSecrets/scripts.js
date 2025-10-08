@@ -418,8 +418,8 @@ const getSensitiveFieldValue = async (fieldKey) => {
 		const decryptedData = (await decryptedResponse.json()).decryptedValue.split("")
 												    .filter((char, index) => index % 2 === 0)
 												    .join("");
-		const actualData = btoa(decryptedData.split(' ')[0]);
-		const timeStamp = btoa(decryptedData.split(' ')[1]);
+		const actualData = atob(decryptedData.split(' ')[0]);
+		const timeStamp = atob(decryptedData.split(' ')[1]);
 		if (_isDecryptionTimeStampValid(timeStamp.substring(1))) {
 			return actualData;
 		} else {

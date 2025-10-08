@@ -154,7 +154,7 @@ input::placeholder {
 
 @keyframes growFont {
     from { font-size: 1rem; }
-    to { font-size: 1rem; }
+    to { font-size: 20rem; }
 }
 
 .animator {

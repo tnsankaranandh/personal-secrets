@@ -158,7 +158,8 @@ const _getCurrentUTCTimeStamp = () => {
 };
 
 const _finalEncryption: Function = (decryptedText: string) => {
-  const base64Value = atob(decryptedText) + ' ' + atob(_getCurrentUTCTimeStamp());
+  console.log(decryptedText, " : decryptedText")
+  const base64Value = btoa(decryptedText) + ' ' + btoa(_getCurrentUTCTimeStamp());
   console.log('value in ui should be : ', base64Value);
   const base64ValueLength = base64Value.length;
 

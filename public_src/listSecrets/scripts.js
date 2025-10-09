@@ -242,7 +242,8 @@ const itemChanged = (itemUidToSelect) => {
 				\
 				<div class="input-group input-group-lg">\
 					<span class="input-group-text p-0 pr-2 pl-2">\
-						<input type="text" disabled class="form-control" value="' + ofK + '" placeholder="******">\
+						<input id="otherFieldsKeyInput' + index + '" type="text" disabled class="form-control" value="' + ofK + '" placeholder="******" aria-describedby="otherFieldsKey' + index + '"">\
+						<div id="otherFieldsKeyTooltip' + index + '" role"tooltip">' + ofK + '</div>\
             <button id="keyCopyBtn' + index + '" class="btn btn-success" onclick="copyText("' + ofK + '")"><i class="bi bi-copy"></i></button>\
 					</span>\
 					<input id="sensitiveValueField' + index + '" type="text" disabled class="form-control" value="' + item.otherFields[ofK] + '" placeholder="******">\
@@ -266,6 +267,16 @@ const itemChanged = (itemUidToSelect) => {
 			document.getElementById('sensitiveValueShowBtn' + index)?.addEventListener('click', () => {
 				showSensitiveOtherField('sensitiveValueField' + index, ofK);
 			});
+			const popperInstance = Popper.createPopper(document.getElementById('otherFieldsKeyInput' + index), document.getElementById('otherFieldsKeyTooltip' + index), {
+				placement: 'top',
+	    });
+	    document.getElementById('otherFieldsKeyInput' + index).addEventListener('mouseenter', () => {
+	    	showTooltip(index, popperInstance);
+	    });
+	    document.getElementById('otherFieldsKeyInput' + index).addEventListener('mouseleave', () => {
+	    	hideTooltip(index);
+	    });
+
 		});
 		hideLoader();
 	})
@@ -274,17 +285,34 @@ const itemChanged = (itemUidToSelect) => {
 		hideLoader();
 	});
 };
+const showTooltip = (index) => {
+    document.getElementById('otherFieldsKeyTooltip' + index).setAttribute('data-show', ''); // Add data-show attribute to reveal tooltip
+    popperInstance.update();
+}
+
+const hideTooltip = (index) => {
+    document.getElementById('otherFieldsKeyTooltip' + index).removeAttribute('data-show'); // Remove data-show attribute to hide tooltip
+}
 
 const createFolderModalInstance = new bootstrap.Modal(document.getElementById('createFolderModal'), {});
 const openCreateFolderModal = (editMode) => {
+	const selectedFolderUid = document.getElementById('folderSelect').value;
+	if (editMode && !selectedFolderUid)
+		return alert("No Folder selected!");
 	createFolderModalInstance.show();
 	window.postMessage({
 		type: 'createFolderModalShown',
-		folderUid: editMode ? document.getElementById('folderSelect').value : null,
+		folderUid: editMode ? selectedFolderUid : null,
 	});
 };
 const createItemModalInstance = new bootstrap.Modal(document.getElementById('createItemModal'), {});
 const openCreateItemModal = (editMode) => {
+	const selectedItemUid = document.getElementById('itemSelect').value;
+	const selectedFolderUid = document.getElementById('folderSelect').value;
+	if (editMode && !selectedFolderUid)
+		return alert("No Folder selected!");
+	if (editMode && !selectedItemUid)
+		return alert("No Item selected!");
 	createItemModalInstance.show();
 	window.postMessage({
 		type: 'createItemModalShown',
@@ -479,8 +507,10 @@ const showSensitiveFieldValue = (elementId, value) => {
 };
 
 $('#deleteFolderBtn').on('confirmed.bs.confirmation', function () {
+	const selectedFolderUid = document.getElementById('folderSelect').value;
+	if (!selectedFolderUid) return alert("No Folder selected!");
 	showLoader();
-	fetch("/folder/delete/" + document.getElementById('folderSelect').value, {
+	fetch("/folder/delete/" + selectedFolderUid, {
 		method: 'DELETE',
 		headers: {
 			'Content-Type': 'application/json',
@@ -502,8 +532,10 @@ $('#deleteFolderBtn').on('confirmed.bs.confirmation', function () {
 });
 
 $('#deleteItemBtn').on('confirmed.bs.confirmation', function () {
+	const selectedItemUid = document.getElementById('folderSelect').value;
+	if (!selectedItemUid) return alert("No Folder selected!");
 	showLoader();
-	fetch("/item/delete/" + document.getElementById('itemSelect').value, {
+	fetch("/item/delete/" + selectedItemUid, {
 		method: 'DELETE',
 		headers: {
 			'Content-Type': 'application/json',
@@ -529,3 +561,5 @@ $('#deleteItemBtn').on('confirmed.bs.confirmation', function () {
 $('[data-toggle=confirmation]').confirmation({
   rootSelector: '[data-toggle=confirmation]',
 });
+
+console.log('Popper: ', Popper);

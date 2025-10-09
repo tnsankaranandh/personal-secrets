@@ -223,3 +223,19 @@ input:disabled {
 .header-badge {
   font-size: 150%;
 }
+
+
+[id^="otherFieldsKeyTooltip"] {
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  display: none; 
+  transform: none !important;
+}
+
+
+[id^="otherFieldsKeyTooltip"][data-show] {
+  display: block;
+}

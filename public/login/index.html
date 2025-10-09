@@ -236,6 +236,22 @@ input:disabled {
 .header-badge {
   font-size: 150%;
 }
+
+
+[id^="otherFieldsKeyTooltip"] {
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  display: none; 
+  transform: none !important;
+}
+
+
+[id^="otherFieldsKeyTooltip"][data-show] {
+  display: block;
+}
 </style>
 </head>
 <body class="login-body">
@@ -244,11 +260,11 @@ input:disabled {
       <h3>Login</h3>
       <div class="input-field">
           <i class="fa fa-user-circle-o"></i>
-          <input type="text" placeholder="Username" id="username" value="admin">
+          <input type="text" placeholder="Username" id="username" value="">
       </div>
       <div class="input-field">
         <i class="fa fa-lock"></i>
-        <input type="password" placeholder="Password" id="password" value="admin">
+        <input type="password" placeholder="Password" id="password" value="">
     </div>
     <button id="loginEnabledButton" onclick="login()" class="login-btn text-center">
       Login

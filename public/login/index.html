@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -279,6 +279,309 @@ input:disabled {
       </div>
     </div>
   </div>
+  
+  <div id="loginAlertContainer" class="alert-container">
+  </div>
+</body>
+<script>
+const originalFetch = window.fetch;
+window.fetch = function(input, init = {}) {
+	const sessionValue = sessionStorage.getItem('UserSession');
+
+	if (sessionValue) {
+		init.headers = {
+			...init.headers,
+			'X-Session-Data': sessionValue
+		};
+	}
+
+	return originalFetch(input, init);
+};
+
+const addUserSession = user => {
+	sessionStorage.setItem("UserSession", user.sessionToken);
+	sessionStorage.setItem("UserRole", user.role);
+	sessionStorage.setItem("UserUid", user._id);
+};
+
+const _hasValidSession = () => {
+	return sessionStorage.getItem("UserSession") && sessionStorage.getItem("UserRole") && sessionStorage.getItem("UserUid");
+};
+
+const deleteUserSession = () => {
+	sessionStorage.removeItem('UserSession');
+	sessionStorage.removeItem('UserRole');
+	sessionStorage.removeItem('UserUid');
+};
+
+const validateInvalidSessionFromAPIResponse = async (response) => {
+	const clonedResponse = response.clone();
+	try {
+		let errorData = {};
+		try {
+			errorData = await response.json();
+		} catch (e) {
+			console.error('JSON error ', e);
+			try {
+				errorData = await clonedResponse.text();
+			} catch (e) {
+				console.error('Text error ', e);
+				console.error('Unknown response data type! Unable to validate');
+				return true;
+			}
+		}
+		if (errorData?.isSessionInvalid) {
+			deleteUserSession();
+			window.location.href = '/login?invalidSession=true';
+			return true;
+		}
+		let errorMessage = null;
+		if (typeof errorData === 'string') {
+			errorMessage = errorData;
+		} else {
+			errorMessage = errorData?.message || 'Unknown Error';
+		}
+		createBootstrapAlert(errorMessage, 'danger');
+		return true;
+	} catch (sessionValidationError) {
+		console.error("Error while validating session error: ", sessionValidationError);
+	}
+	return false;
+};
+
+let alertElementCount = 0;
+const createBootstrapAlert = (message, type) => {
+	alertElementCount++;
+	const alertElement = document.createElement('div');
+	alertElement.className = `alert alert-${type} fade show`;
+	alertElement.setAttribute('role', 'alert');
+	alertElement.setAttribute('id', 'alert' + alertElementCount);
+
+	const messageSpan = document.createElement('span');
+	messageSpan.className = `pr-5`;
+	messageSpan.textContent = message;
+	alertElement.appendChild(messageSpan);
+	const closeButton = document.createElement('button');
+	closeButton.innerHTML = '<i class="bi bi-x"></i>';
+	closeButton.className = `btn btn-danger`;
+	closeButton.setAttribute('id', 'alertCloseButton' + alertElementCount);
+	alertElement.appendChild(closeButton);
+
+	const alertContainer = document.getElementById('loginAlertContainer') || document.getElementById('listAlertContainer');
+	alertContainer.appendChild(alertElement);
+	
+	document.getElementById('alertCloseButton' + alertElementCount).addEventListener('click', (event) => {
+		let closeButtonId = event.target.getAttribute('id');
+		if (!closeButtonId) {
+			closeButtonId = event.target.parentElement.getAttribute('id');
+		}
+		if (!closeButtonId) return;
+		document.getElementById('alert' + closeButtonId.split('alertCloseButton')[1])?.remove();
+	});
+
+	setTimeout(() => { closeButton.click(); }, 5500);
+};
+
+const _getCurrentUTCTimeStamp = () => {
+	const date = new Date();
+	const year = date.getUTCFullYear();
+	const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+	const day = String(date.getUTCDate()).padStart(2, '0');
+	const hours = String(date.getUTCHours()).padStart(2, '0');
+	const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+	const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+
+	return `${year}${month}${day}${hours}${minutes}${seconds}`;
+};
+
+const doubleEncrypt = async (encryptedValue, sanityDocUid) => {
+  	const readClient = SanityClient.createClient({
+      projectId: 'cdedbo4r',
+      dataset: 'personal-secrets',
+      apiVersion: '2025-10-06', // Use a specific API version
+      token: "skWfePsl2FqxhND8YMojWoVDxs8QIP7o0FqESJ2wSinRUiD7t0HtzBhMPgMuJctDwPiHsZTbMy7MMwo77iTtFJH5qCy0ahctdGj60OCFg2ERAv4YjqNP2S6kzt8mEkO1wMdm9rUqOSJKocR9prkcYfiQ6MK72jZXr4eLIGGyCyGz6mncugxL",
+      perspective: 'raw',
+    });
+    const query = `*[_id == "${sanityDocUid}"]`;
+    const privateDocuments = await readClient.fetch(query);
+    const message =  new TextEncoder().encode(encryptedValue + '----' + _getCurrentUTCTimeStamp());
+    const signature = await window.jscec.sign(
+		message,
+		JSON.parse(privateDocuments?.[0]?.privateKey),
+		'SHA-256',
+		'raw'
+	);		
+    return btoa(message.toString().replaceAll(",", "a")) + '-data-' + btoa(signature.toString().replaceAll(",", "a"));
+};
+
+const getEncryptedDataWithPrivateKey = async data => {
+	const stringifiedData = JSON.stringify(data);
+	const crypt = new JSEncrypt({ default_key_size: 4096 });
+	await crypt.getKey();
+	const publicKey = crypt.getPublicKey();
+	const privateKey = crypt.getPrivateKey();
+	crypt.setPublicKey(publicKey);
+	const encryptedData = crypt.encrypt(stringifiedData);
+	return {
+		data: encryptedData + '-data-' + btoa(privateKey),
+	};
+};
+
+</script>
+<script>
+document.getElementById('loginEnabledButton').style.display = "block";
+document.getElementById('loginDisabledButton').style.display = "none";
+const login = () => {
+	document.getElementById('loginEnabledButton').style.display = "none";
+	document.getElementById('loginDisabledButton').style.display = "block";
+	fetch("/authenticateUser", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			username: document.getElementById('username').value,
+			password: document.getElementById('password').value
+		}),
+	}).then(async response => {
+		if (!response.ok) {
+			if (await validateInvalidSessionFromAPIResponse(response))
+				throw new Error("Invalid Session!");
+			throw new Error('Network response was not ok for logging in');
+		}
+		return response.json();
+	})
+	.then(data => {
+		document.getElementById('loginEnabledButton').style.display = "block";
+		document.getElementById('loginDisabledButton').style.display = "none";
+		addUserSession(data.user);
+		window.location.href = '/listSecrets';
+	})
+	.catch(error => {
+		document.getElementById('loginEnabledButton').style.display = "block";
+		document.getElementById('loginDisabledButton').style.display = "none";
+		console.error('Error while logging in:', error);
+	});
+};
+
+window.addEventListener('pageshow', () => {
+	const queryString = window.location.search;
+	const urlParams = new URLSearchParams(queryString);
+	const isInvalidSession = urlParams.get('invalidSession');
+	if (isInvalidSession === 'true') {
+		createBootstrapAlert("Invalid Session! Please login again.", "danger");
+	} else if (_hasValidSession()) {
+		window.location.href = '/listSecrets';
+	}
+});
+</script>
+<script>
+</script>
+</html>
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Login Page</title>
+  <style>
+    body {
+      background: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .login-container {
+      background: #fff;
+      padding: 2rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .login-container h2 {
+      margin: 0 0 0.5rem 0;
+      text-align: center;
+      color: #333;
+    }
+    .login-container label {
+      font-size: 1rem;
+      color: #555;
+    }
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    .login-container button {
+      padding: 0.7rem;
+      background-color: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .login-container button:hover {
+      background-color: #1565c0;
+    }
+    .security-label {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #e53935;
+      font-weight: bold;
+    }
+    @media (max-width: 400px) {
+      .login-container {
+        padding: 1rem 0.5rem;
+        max-width: 95vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <form class="login-container">
+    <h2>Login</h2>
+    <div>
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autocomplete="username">
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+    <button id="loginEnabledButton" onclick="login()">Login</button>
+    <div class="security-label">
+      Every PASSWORD is meant to be SECURED!
+    </div>
+  </form>
   
   <div id="loginAlertContainer" class="alert-container">
   </div>

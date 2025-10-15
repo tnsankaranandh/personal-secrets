@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -37,6 +37,119 @@
       </div>
     </div>
   </div>
+  
+  <div id="loginAlertContainer" class="alert-container">
+  </div>
+</body>
+<script src="../common/scripts.js?__inline"></script>
+<script src="./scripts.js?__inline"></script>
+<script>
+</script>
+</html>
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Login Page</title>
+  <style>
+    body {
+      background: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .login-container {
+      background: #fff;
+      padding: 2rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .login-container h2 {
+      margin: 0 0 0.5rem 0;
+      text-align: center;
+      color: #333;
+    }
+    .login-container label {
+      font-size: 1rem;
+      color: #555;
+    }
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    .login-container button {
+      padding: 0.7rem;
+      background-color: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .login-container button:hover {
+      background-color: #1565c0;
+    }
+    .security-label {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #e53935;
+      font-weight: bold;
+    }
+    @media (max-width: 400px) {
+      .login-container {
+        padding: 1rem 0.5rem;
+        max-width: 95vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <form class="login-container">
+    <h2>Login</h2>
+    <div>
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autocomplete="username">
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+    </div>
+    <button id="loginEnabledButton" onclick="login()">Login</button>
+    <div class="security-label">
+      Every PASSWORD is meant to be SECURED!
+    </div>
+  </form>
   
   <div id="loginAlertContainer" class="alert-container">
   </div>

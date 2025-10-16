@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 
 const list: any = async (req: any, res: any, next: any) => {
   try {
-    let folders = await FolderModel.find({});
+    let folders = await FolderModel.find({}).sort({ name: 1 });
     res.send({ folders });
   } catch (e) {
     console.log(

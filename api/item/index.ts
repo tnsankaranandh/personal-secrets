@@ -5,7 +5,7 @@ const chalk = require("chalk");
 const list: any = async (req: any, res: any, next: any) => {
   try {
     const { folderUid } = req.params;
-    let items = await ItemModel.find({ folderUid });
+    let items = await ItemModel.find({ folderUid }).sort({ title: 1 });
     res.send({ items });
   } catch (e) {
     console.log(

@@ -52,6 +52,7 @@ const detail: any = async (req: any, res: any, next: any) => {
 const update: any = async (req: any, res: any, next: any) => {
   try {
     const decryptedBody = decryptData(req.body);
+    console.log('decrypted body ', decryptedBody);
     let previousItem = await ItemModel.findById(decryptedBody._id);
     previousItem = previousItem.toObject();
     previousItem.folderUid = decryptedBody.folderUid;

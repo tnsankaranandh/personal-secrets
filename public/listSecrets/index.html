@@ -999,6 +999,21 @@ const toggleActionsMenu = () => {
 		document.getElementById("actionsMenu").style.display = "none";
 	} else {
 		document.getElementById("actionsMenu").style.display = "block";
+		
+		// var link = $(element);
+		// var offset = link.offset();
+
+		// var top = offset.top;
+		// var left = offset.left;
+
+		// var bottom = top + link.outerHeight();
+		// var right = left + link.outerWidth();
+
+		const myElement = document.getElementById('actionsMenuBtn');
+		const boundingRectOfActionsBtn = myElement.getBoundingClientRect();
+		const bottomPositionOfActionsBtn = boundingRectOfActionsBtn.bottom;
+
+		document.getElementById("actionsMenu").style.height = (window.innerHeight - bottomPositionOfActionsBtn) + "px";
 	}
 };
 

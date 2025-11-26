@@ -981,16 +981,30 @@ const copySensitiveOtherField = async sensitiveFieldKey => {
 
 const copyText = text => {
 	return new Promise((resolve, reject) => {
-		navigator.clipboard.writeText(text)
-	    .then(() => {
-	    	resolve();
-	    	createBootstrapAlert("Copied Successfully!", "success");
-	    })
-	    .catch(err => {
-	    	reject();
-	    	createBootstrapAlert("Failed to copy text!", "danger");
-	      console.error('Failed to copy text: ', err);
-	    });
+		if (window.AndroidClipboard && typeof window.AndroidClipboard.copyToClipboard === 'function') {
+			try {
+				window.AndroidClipboard.copyToClipboard(text);
+				console.log('Copied to clipboard via Android interface.');
+				resolve();
+				createBootstrapAlert("Copied Successfully!", "success");
+			} catch (e) {
+		    	reject();
+		    	createBootstrapAlert("Failed to copy text!", "danger");
+		      	console.error('Failed to copy text: ', e);
+			}
+		} else {
+			console.log('Android clipboard interface not found. Trying native browser navigator to copy.');
+			navigator.clipboard.writeText(text)
+			    .then(() => {
+			    	resolve();
+			    	createBootstrapAlert("Copied Successfully!", "success");
+			    })
+			    .catch(err => {
+			    	reject();
+			    	createBootstrapAlert("Failed to copy text!", "danger");
+			      	console.error('Failed to copy text: ', err);
+			    });
+		}
 	});
 };
 
